@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Wonders 🏆 3rd Edition</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0e1726;
+    --card: #1a2535;
+    --card2: #212f42;
+    --accent: #00ff87;
+    --gold: #ffd700;
+    --red: #ff4757;
+    --teal: #00c4b4;
+    --blue: #40a9ff;
+    --text: #e8edf3;
+    --muted: #7a8fa8;
+    --border: #263345;
+    --header-gradient: linear-gradient(135deg, #0a1628 0%, #0e1f3a 50%, #0a1628 100%);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+
+  /* HEADER */
+  .header {
+    background: var(--header-gradient);
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-logo { font-size: 36px; }
+  .header-title h1 { font-size: 22px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
+  .header-title p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .gw-badge {
+    background: rgba(0,230,118,0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .refresh-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: #00ff8a; transform: scale(1.03); }
+  .refresh-btn.loading { opacity: 0.6; cursor: wait; }
+  .last-updated { font-size: 11px; color: var(--muted); }
+
+  /* TABS */
+  .tabs {
+    background: var(--card);
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 14px 20px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN */
+  .main { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .icon { font-size: 16px; }
+
+  /* STAT CARDS */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  @media (max-width: 800px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-card .value { font-size: 26px; font-weight: 800; margin: 6px 0 4px; }
+  .stat-card .sub { font-size: 11px; color: var(--muted); }
+  .stat-card.green .value { color: var(--accent); }
+  .stat-card.gold .value { color: var(--gold); }
+  .stat-card.red .value { color: var(--red); }
+  .stat-card.blue .value { color: var(--blue); }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--card2);
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td { padding: 11px 12px; vertical-align: middle; }
+  .rank { font-weight: 800; font-size: 16px; width: 36px; color: var(--muted); }
+  .rank-1 { color: var(--gold) !important; }
+  .rank-2 { color: #c0c0c0 !important; }
+  .rank-3 { color: #cd7f32 !important; }
+  .rank-top { background: rgba(255,215,0,0.04); }
+  .rank-bottom { background: rgba(255,82,82,0.03); }
+  .current-user-row td { font-weight: 700 !important; }
+  .current-user-row td .player-name { color: var(--accent) !important; }
+  .current-user-row td .team-name { color: var(--accent); opacity: 0.7; }
+  .current-user-row { background: rgba(0,255,135,0.06) !important; outline: 1px solid rgba(0,255,135,0.2); outline-offset: -1px; }
+  .player-name { font-weight: 600; font-size: 14px; }
+  .team-name { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .pts-big { font-size: 18px; font-weight: 800; }
+  .gw-pts { font-size: 12px; color: var(--muted); }
+  .rank-change { font-size: 12px; font-weight: 600; }
+  .up { color: var(--accent); }
+  .down { color: var(--red); }
+  .same { color: var(--muted); }
+  .money { color: var(--accent); font-weight: 700; font-size: 15px; }
+  .losses-val { color: var(--red); font-weight: 700; }
+  .zero-losses { color: var(--accent); font-weight: 700; }
+
+  /* CHART CONTAINER */
+  .chart-container { position: relative; height: 340px; }
+
+  /* CHIP TABLE */
+  .chip-grid { overflow-x: auto; }
+  .chip-table th, .chip-table td { padding: 9px 10px; text-align: center; font-size: 12px; white-space: nowrap; }
+  .chip-table thead th { background: var(--card2); }
+  .chip-table .player-col { text-align: left; font-weight: 600; min-width: 90px; }
+  .chip-used { border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; display: inline-block; }
+  .chip-wc1 { background: rgba(124,77,255,0.25); color: #b39ddb; }
+  .chip-wc2 { background: rgba(124,77,255,0.4); color: #ce93d8; }
+  .chip-bb { background: rgba(255,215,0,0.2); color: var(--gold); }
+  .chip-tc { background: rgba(0,230,118,0.2); color: var(--accent); }
+  .chip-fh { background: rgba(64,169,255,0.2); color: var(--blue); }
+  .chip-fh2 { background: rgba(64,169,255,0.35); color: #81d4fa; }
+  .chip-avail { color: #2c3e50; font-size: 11px; }
+  .chip-highlight { background: rgba(0,230,118,0.08); }
+
+  /* PRIZE SECTION */
+  .prize-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .prize-grid { grid-template-columns: 1fr; } }
+  .prize-item {
+    background: var(--card2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-left: 4px solid var(--border);
+  }
+  .prize-item.p1 { border-left-color: var(--gold); }
+  .prize-item.p2 { border-left-color: #c0c0c0; }
+  .prize-item.p3 { border-left-color: #cd7f32; }
+  .prize-item.p4 { border-left-color: #7a8fa8; }
+  .prize-item.cup { border-left-color: var(--accent); }
+  .prize-item.weekly { border-left-color: var(--blue); }
+  .prize-item.highest { border-left-color: var(--red); }
+  .prize-emoji { font-size: 28px; }
+  .prize-label { font-size: 13px; color: var(--muted); }
+  .prize-amount { font-size: 22px; font-weight: 800; color: var(--gold); }
+  .prize-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .prize-total {
+    background: var(--header-gradient);
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+    margin-top: 20px;
+    border: 1px solid var(--accent);
+  }
+  .prize-total .big { font-size: 40px; font-weight: 900; color: var(--gold); }
+  .prize-total .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* REPORT SECTION */
+  .report-header {
+    background: var(--header-gradient);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .report-gw { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+  .report-winner { font-size: 24px; font-weight: 800; margin: 8px 0 4px; }
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 16px; }
+  @media (max-width: 700px) { .report-grid { grid-template-columns: 1fr 1fr; } }
+  .report-item { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px 14px; }
+  .report-item .rlabel { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .report-item .rvalue { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .winner-val { color: var(--accent); }
+  .loser-val { color: var(--red); }
+  .report-mention {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    border-left: 3px solid var(--gold);
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .report-fact {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    border-left: 3px solid var(--teal);
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .report-archive { margin-top: 24px; }
+  .archive-week {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 0;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .archive-header {
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .archive-header:hover { background: rgba(255,255,255,0.04); }
+  .archive-header .aw-title { font-weight: 600; font-size: 14px; }
+  .archive-header .aw-meta { font-size: 12px; color: var(--muted); }
+  .archive-header .toggle { color: var(--muted); font-size: 18px; }
+  .archive-body { display: none; padding: 0 18px 16px; border-top: 1px solid var(--border); }
+  .archive-body.open { display: block; }
+  .archive-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; font-size: 12px; }
+  .archive-mini .am-item .aml { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+  .archive-mini .am-item .amv { font-weight: 700; margin-top: 2px; }
+
+  /* NEEDY LIST */
+  .needy-banner {
+    background: linear-gradient(135deg, #1a0a0a, #2d1010);
+    border: 2px solid var(--red);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .needy-banner h2 { font-size: 22px; color: var(--red); margin-bottom: 6px; }
+  .needy-banner p { color: var(--muted); font-size: 13px; }
+  .needy-list { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+  .needy-item {
+    background: rgba(255,82,82,0.1);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .needy-item .ni-emoji { font-size: 32px; margin-bottom: 8px; }
+  .needy-item .ni-name { font-size: 16px; font-weight: 700; }
+  .needy-item .ni-team { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .needy-item .ni-reason { font-size: 11px; color: var(--red); margin-top: 6px; font-style: italic; }
+
+  /* RIVALRY BOARD */
+  .rivalry-card {
+    background: var(--card2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .rivalry-players { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+  .rivalry-vs { color: var(--muted); font-size: 11px; }
+  .rivalry-score { margin-left: auto; }
+  .rivalry-score span { font-weight: 800; }
+  .rivalry-score .winner-side { color: var(--accent); }
+  .rivalry-score .loser-side { color: var(--red); }
+
+  /* SECTION HEADING */
+  .section-heading {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin-left: 10px;
+  }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .badge-green { background: rgba(0,230,118,0.15); color: var(--accent); }
+  .badge-red { background: rgba(255,82,82,0.15); color: var(--red); }
+  .badge-gold { background: rgba(255,215,0,0.15); color: var(--gold); }
+  .badge-blue { background: rgba(64,169,255,0.15); color: var(--blue); }
+
+  /* MINI LEADERBOARD IN OVERVIEW */
+  .mini-table tbody tr:last-child td { border-bottom: none; }
+
+  /* WEEKLY WINNER STREAK */
+  .streak-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+  .streak-gw {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .streak-gw:hover { transform: scale(1.15); }
+  .streak-gw.won { background: rgba(0,230,118,0.25); color: var(--accent); border: 1px solid rgba(0,230,118,0.4); }
+  .streak-gw.lost { background: rgba(255,82,82,0.2); color: var(--red); border: 1px solid rgba(255,82,82,0.3); }
+  .streak-gw.mid { background: rgba(255,255,255,0.07); color: var(--muted); border: 1px solid var(--border); }
+
+  /* CHIP DANGER ZONE */
+  .danger-zone {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .danger-player {
+    background: var(--card2);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+  }
+  .danger-player.has-chips { border-color: rgba(0,230,118,0.3); }
+  .danger-player.no-chips { border-color: rgba(255,82,82,0.2); opacity: 0.6; }
+  .danger-player .dp-name { font-weight: 700; font-size: 13px; }
+  .danger-player .dp-chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* SCROLL TO TOP */
+  .sep { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* TOOLTIP */
+  [title] { cursor: help; }
+
+  .no-data { color: var(--muted); font-style: italic; text-align: center; padding: 20px; }
+
+  /* WELCOME SCREEN */
+  .welcome-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 30px 20px;
+  }
+  .welcome-overlay.hidden { display: none; }
+  .welcome-logo { font-size: 52px; margin-bottom: 12px; }
+  .welcome-title { font-size: 28px; font-weight: 900; color: var(--accent); margin-bottom: 6px; letter-spacing: 1px; }
+  .welcome-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+  .welcome-question { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 20px; }
+  .welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    max-width: 900px;
+    width: 100%;
+  }
+  .welcome-player {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .welcome-player:hover {
+    border-color: var(--accent);
+    background: var(--card2);
+    transform: translateY(-2px);
+  }
+  .welcome-player .wp-nick { font-size: 16px; font-weight: 800; color: var(--accent); }
+  .welcome-player .wp-name { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .welcome-player .wp-team { font-size: 10px; color: var(--border); margin-top: 2px; }
+
+  /* VIEWER BADGE */
+  .viewer-badge {
+    background: rgba(0,255,135,0.12);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .viewer-badge:hover { background: rgba(0,255,135,0.2); }
+
+  /* CHIP TABLE - divider column */
+  .chip-divider { width: 3px; background: var(--border); padding: 0 !important; }
+  .chip-second-header { color: var(--teal) !important; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ WELCOME SCREEN ═══════════════════════ -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-logo">⚽</div>
+  <div class="welcome-title">Weekly Wonders 🏆</div>
+  <div class="welcome-sub">3rd Edition · 2025/26</div>
+  <div class="welcome-question">Who are you?</div>
+  <div class="welcome-grid" id="welcomeGrid"></div>
+</div>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">⚽</div>
+    <div class="header-title">
+      <h1>Weekly Wonders 🏆</h1>
+      <p>3rd Edition · FPL League 46235</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="viewer-badge" onclick="showWelcome()" id="viewerBadge" title="Click to change player">👤 —</span>
+    <div>
+      <div class="gw-badge" id="gwBadge">GW 31</div>
+      <div class="last-updated" id="lastUpdated">Last updated: 29 Mar 2026</div>
+    </div>
+    <button class="refresh-btn" onclick="refreshData()">↺ Live Refresh</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TABS ═══════════════════════ -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">📊 Overview</div>
+  <div class="tab" onclick="showTab('money',this)">💰 Money</div>
+  <div class="tab" onclick="showTab('chips',this)">🎰 Chips</div>
+  <div class="tab" onclick="showTab('reports',this)">📋 Reports</div>
+  <div class="tab" onclick="showTab('extras',this)">⭐ Extras</div>
+  <div class="tab" onclick="showTab('prizes',this)">🏅 Prize Structure</div>
+</div>
+
+<!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
+<div class="main">
+
+  <!-- ─────── OVERVIEW TAB ─────── -->
+  <div class="section active" id="tab-overview">
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="grid-2">
+      <!-- FPL League Table -->
+      <div class="card" style="grid-column: 1/-1;">
+        <div class="card-title"><span class="icon">🏆</span> FPL League Standings — Weekly Wonders 3rd Edition</div>
+        <div class="table-wrap">
+          <table id="standingsTable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Manager</th>
+                <th>GW Pts</th>
+                <th>Total</th>
+                <th>Gap to Leader</th>
+                <th>Change</th>
+              </tr>
+            </thead>
+            <tbody id="standingsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Season Trajectory -->
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title">
+        <span class="icon">📈</span> Season Trajectory — Cumulative Points
+        <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:10px;">💡 Tick names on the right to compare against your rivals</span>
+      </div>
+      <div class="chart-container" style="height:520px;">
+        <canvas id="trajectoryChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Weekly Performance -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">🎯</span> Weekly Winners</div>
+        <div id="weeklyWinners" class="streak-bar"></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px;">Hover for details · <span style="color:var(--accent)">■</span> Won the week &nbsp; <span style="color:var(--red)">■</span> Bottom · <span style="color:var(--muted)">■</span> Middle</p>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📊</span> Average Score by Week</div>
+        <div class="chart-container" style="height:200px;">
+          <canvas id="avgChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────── MONEY TAB ─────── -->
+  <div class="section" id="tab-money">
+    <div class="grid-2">
+      <!-- Money Leaderboard -->
+      <div class="card">
+        <div class="card-title"><span class="icon">💰</span> Winnings Leaderboard</div>
+        <div class="table-wrap">
+          <table id="moneyTable">
+            <thead>
+              <tr><th>#</th><th>Manager</th><th>Team</th><th>Winnings</th></tr>
+            </thead>
+            <tbody id="moneyTbody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--card2);border-radius:8px;font-size:12px;color:var(--muted);">
+          💡 Winnings include weekly prizes (1st/2nd each GW) — end-of-season prizes not yet allocated.
+        </div>
+      </div>
+
+      <!-- Loser Leaderboard -->
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;"><span style="display:flex;align-items:center;gap:6px;"><span class="icon">😬</span> Hall of Shame — Most Last Places</span><img src="bottom.jpg" alt="Bottom" style="height:36px;width:auto;border-radius:4px;object-fit:cover;opacity:0.9;" onerror="this.style.display='none'"></div>
+        <div class="table-wrap">
+          <table id="loserTable">
+            <thead>
+              <tr><th>#</th><th>Manager</th><th>Team</th><th>Times Bottom</th></tr>
+            </thead>
+            <tbody id="loserTbody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--card2);border-radius:8px;font-size:12px;color:var(--muted);">
+          📢 Finishing bottom carries no financial penalty — just the shame.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────── CHIPS TAB ─────── -->
+  <div class="section" id="tab-chips">
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title"><span class="icon">🎰</span> Chips Used This Season</div>
+      <div class="chip-grid">
+        <table class="chip-table" id="chipsTable">
+          <thead>
+            <tr>
+              <th class="player-col">Player</th>
+              <th>Wildcard 1</th>
+              <th>Bench Boost 1</th>
+              <th>Triple Cap 1</th>
+              <th>Free Hit 1</th>
+              <th class="chip-divider"></th>
+              <th class="chip-second-header">Wildcard 2</th>
+              <th class="chip-second-header">Bench Boost 2</th>
+              <th class="chip-second-header">Triple Cap 2</th>
+              <th class="chip-second-header">Free Hit 2</th>
+            </tr>
+          </thead>
+          <tbody id="chipsTbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;font-size:11px;align-items:center;">
+        <span><span class="chip-used chip-wc1">WC</span> Wildcard</span>
+        <span><span class="chip-used chip-bb">BB</span> Bench Boost</span>
+        <span><span class="chip-used chip-tc">TC</span> Triple Captain</span>
+        <span><span class="chip-used chip-fh">FH</span> Free Hit</span>
+        <span style="color:var(--teal);font-weight:600;">│ Second chips (extra, given by FPL)</span>
+        <span style="color:var(--muted)">· GW number shown inside each chip</span>
+      </div>
+    </div>
+
+    <!-- Chip Danger Zone -->
+    <div class="card">
+      <div class="card-title"><span class="icon">⚠️</span> Chips Still Available (GW 32–38)</div>
+      <div class="danger-zone" id="dangerZone"></div>
+      <p style="margin-top:14px;font-size:11px;color:var(--muted);">Based on FPL API chip records. If a player has chips remaining, now is the time to use them!</p>
+    </div>
+  </div>
+
+  <!-- ─────── REPORTS TAB ─────── -->
+  <div class="section" id="tab-reports">
+    <div id="latestReport"></div>
+    <div class="report-archive">
+      <div class="section-heading">📚 Previous Reports</div>
+      <div id="archiveReports"></div>
+    </div>
+  </div>
+
+  <!-- ─────── EXTRAS TAB ─────── -->
+  <div class="section" id="tab-extras">
+
+    <!-- The Needy List -->
+    <div class="needy-banner">
+      <h2>🆘 The Needy List</h2>
+      <div class="needy-list" id="needyList"></div>
+    </div>
+
+    <!-- Most Improved -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title"><span class="icon">🚀</span> Form Table — Last 5 Gameweeks</div>
+      <div class="table-wrap">
+        <table id="formTable">
+          <thead>
+            <tr id="formHeaderRow"><th>Manager</th><th>GW–</th><th>GW–</th><th>GW–</th><th>GW–</th><th>GW–</th><th>Last 5 Total</th><th>Form</th></tr>
+          </thead>
+          <tbody id="formTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Highest Single GW Scores -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">🔥</span> Highest Single GW Scores All Season</div>
+        <div class="table-wrap">
+          <table id="highestTable">
+            <thead><tr><th>#</th><th>Manager</th><th>GW</th><th>Points</th></tr></thead>
+            <tbody id="highestTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Most Consistent -->
+      <div class="card">
+        <div class="card-title"><span class="icon">📐</span> Most Consistent (Lowest Std Dev)</div>
+        <div class="table-wrap">
+          <table id="consistencyTable">
+            <thead><tr><th>#</th><th>Manager</th><th>Avg</th><th>Std Dev</th></tr></thead>
+            <tbody id="consistencyTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────── PRIZES TAB ─────── -->
+  <div class="section" id="tab-prizes">
+    <div class="card-title" style="font-size:18px;margin-bottom:20px;">🏅 How The Prize Money Works</div>
+    <div class="prize-grid">
+      <div class="prize-item p1">
+        <div class="prize-emoji">🥇</div>
+        <div>
+          <div class="prize-label">1st Place (End of Season)</div>
+          <div class="prize-amount">£100</div>
+        </div>
+      </div>
+      <div class="prize-item p2">
+        <div class="prize-emoji">🥈</div>
+        <div>
+          <div class="prize-label">2nd Place (End of Season)</div>
+          <div class="prize-amount">£75</div>
+        </div>
+      </div>
+      <div class="prize-item p3">
+        <div class="prize-emoji">🥉</div>
+        <div>
+          <div class="prize-label">3rd Place (End of Season)</div>
+          <div class="prize-amount">£50</div>
+        </div>
+      </div>
+      <div class="prize-item p4">
+        <div class="prize-emoji">4️⃣</div>
+        <div>
+          <div class="prize-label">4th Place (End of Season)</div>
+          <div class="prize-amount">£30</div>
+        </div>
+      </div>
+      <div class="prize-item cup">
+        <div class="prize-emoji">🏆</div>
+        <div>
+          <div class="prize-label">Cup Winner</div>
+          <div class="prize-amount">£20</div>
+          <div class="prize-note">+ £10 for Cup Runner-Up</div>
+        </div>
+      </div>
+      <div class="prize-item weekly">
+        <div class="prize-emoji">📅</div>
+        <div>
+          <div class="prize-label">Weekly 1st Place</div>
+          <div class="prize-amount">~£13/week</div>
+          <div class="prize-note">£495 total pool across season</div>
+        </div>
+      </div>
+      <div class="prize-item weekly">
+        <div class="prize-emoji">📅</div>
+        <div>
+          <div class="prize-label">Weekly 2nd Place</div>
+          <div class="prize-amount">~£7/week</div>
+          <div class="prize-note">£266 total pool across season</div>
+        </div>
+      </div>
+      <div class="prize-item highest">
+        <div class="prize-emoji">🎯</div>
+        <div>
+          <div class="prize-label">Highest Single GW Score</div>
+          <div class="prize-amount">£18</div>
+          <div class="prize-note">Awarded at end of season</div>
+        </div>
+      </div>
+    </div>
+    <div class="prize-total">
+      <div class="prize-label" style="font-size:14px;color:var(--muted);margin-bottom:6px;">TOTAL PRIZE POT</div>
+      <div class="big">£1,064</div>
+      <div class="sub">14 managers × £76 entry = £1,064</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════ DATA ═══════════════════
+
+const PLAYERS = [
+  { nick:'STEER', name:'Tom Steer',         team:"Steer's Strategy",       entry:1631208 },
+  { nick:'BEN',   name:'Ben Tosh',           team:'TeamTosh',               entry:2762029 },
+  { nick:'PGSM',  name:'Philip Green',       team:'Mr 55p',                 entry:251690  },
+  { nick:'SEAN',  name:'Sean Elliott',       team:'Better Now',             entry:618820  },
+  { nick:'BAZ',   name:'Barry Heath',        team:'Beefy Boys',             entry:2906530 },
+  { nick:'CAT',   name:'Richard Catling',    team:"Cat'll do nicely",       entry:4295680 },
+  { nick:'ALEX',  name:'Alexander Roberts',  team:"Oh For Cloughs Sake!",   entry:2013858 },
+  { nick:'ANDREA',name:'Andrea Elliott',     team:'AE United',              entry:5237390 },
+  { nick:'ADAM',  name:'Adam Roberts',       team:'Lee Grant me 3wishes',   entry:2823034 },
+  { nick:'BOBBY', name:'Bobby Roberts',      team:'Lord of the Ings FC',    entry:525582  },
+  { nick:'PASS',  name:'Sam Passmore',       team:'No time United',         entry:4227338 },
+  { nick:'JO',    name:'Jo Steer',           team:'Midnight Owl FC',        entry:9106664 },
+  { nick:'BLEASE',name:'Simon Bleasdale',    team:"Bleasdale's Bandits",    entry:467006  },
+  { nick:'DANNY', name:'Danny Nugent',       team:'Take my money FC',       entry:8223006 }
+];
+
+// GW points per player [GW1...GW31] — net of transfer deductions
+const GW_PTS = {
+  STEER:  [49,54,56,70,46,72,75,67,39,86,60,44,65,66,52,96,65,38,38,40,51,42,36,62,68,68,53,67,81,47,56],
+  BEN:    [55,53,52,54,66,69,73,70,52,82,40,50,66,66,49,82,88,37,50,31,50,44,38,53,71,78,42,67,58,62,57],
+  PGSM:   [62,52,54,75,42,56,76,57,79,82,33,31,40,55,56,57,76,45,40,43,51,44,47,54,83,77,44,50,44,42,77],
+  SEAN:   [60,43,60,67,38,55,67,63,46,86,36,34,24,65,43,70,56,58,50,28,54,42,64,50,67,64,47,77,72,65,47],
+  BAZ:    [64,36,70,59,33,53,52,60,40,65,69,78,39,71,54,74,77,45,38,58,45,38,46,37,64,81,51,47,43,51,39],
+  CAT:    [44,69,54,53,42,45,72,44,36,54,36,49,59,60,60,59,48,46,45,54,63,37,46,45,79,74,47,81,82,35,58],
+  ALEX:   [53,38,46,69,41,67,51,65,44,86,47,57,41,74,40,62,71,52,36,71,54,46,30,59,61,59,39,51,48,42,52],
+  ANDREA: [65,44,33,54,39,52,35,49,58,58,40,47,32,60,65,55,64,48,37,54,50,39,56,44,62,78,41,65,80,60,58],
+  ADAM:   [48,52,58,76,33,26,55,72,51,64,36,38,40,77,54,51,58,48,29,49,62,42,39,45,54,79,43,61,66,52,59],
+  BOBBY:  [43,60,31,71,41,36,41,39,63,76,42,29,31,72,42,80,77,67,42,30,63,27,61,67,68,44,34,68,57,57,58],
+  PASS:   [50,53,63,67,35,60,79,53,48,55,35,39,19,78,45,64,86,42,36,40,52,31,47,42,64,67,34,56,72,43,56],
+  JO:     [49,39,48,74,47,27,36,40,40,80,39,32,27,52,79,70,74,49,42,41,42,35,38,83,67,51,48,64,55,64,49],
+  BLEASE: [62,48,34,48,40,35,74,93,40,71,46,33,30,43,42,53,85,49,39,68,79,26,41,69,53,60,28,62,39,34,56],
+  DANNY:  [49,66,49,42,27,40,77,73,73,63,39,26,40,59,44,44,98,41,24,36,55,47,49,62,67,51,32,50,46,49,60]
+};
+
+// FPL standings after GW31 (press Live Refresh to update)
+let STANDINGS = [
+  {rank:1, lastRank:1, name:'Tom Steer',       nick:'STEER', team:"Steer's Strategy",      total:1809,gwPts:56,entry:1631208},
+  {rank:2, lastRank:2, name:'Ben Tosh',        nick:'BEN',   team:'TeamTosh',              total:1805,gwPts:57,entry:2762029},
+  {rank:3, lastRank:4, name:'Philip Green',    nick:'PGSM',  team:'Mr 55p',                total:1724,gwPts:77,entry:251690 },
+  {rank:4, lastRank:3, name:'Sean Elliott',    nick:'SEAN',  team:'Better Now',            total:1698,gwPts:47,entry:618820 },
+  {rank:5, lastRank:5, name:'Barry Heath',     nick:'BAZ',   team:'Beefy Boys',            total:1677,gwPts:39,entry:2906530},
+  {rank:6, lastRank:6, name:'Richard Catling', nick:'CAT',   team:"Cat'll do nicely",      total:1676,gwPts:58,entry:4295680},
+  {rank:7, lastRank:7, name:'Alex Roberts',    nick:'ALEX',  team:"Oh For Cloughs Sake!",  total:1652,gwPts:52,entry:2013858},
+  {rank:8, lastRank:8, name:'Andrea Elliott',  nick:'ANDREA',team:'AE United',             total:1622,gwPts:58,entry:5237390},
+  {rank:9, lastRank:10,name:'Adam Roberts',    nick:'ADAM',  team:'Lee Grant me 3wishes',  total:1617,gwPts:59,entry:2823034},
+  {rank:10,lastRank:9, name:'Bobby Roberts',   nick:'BOBBY', team:'Lord of the Ings FC',   total:1617,gwPts:58,entry:525582 },
+  {rank:11,lastRank:11,name:'Sam Passmore',    nick:'PASS',  team:'No time United',        total:1611,gwPts:56,entry:4227338},
+  {rank:12,lastRank:12,name:'Jo Steer',        nick:'JO',    team:'Midnight Owl FC',       total:1581,gwPts:49,entry:9106664},
+  {rank:13,lastRank:13,name:'Simon Bleasdale', nick:'BLEASE',team:"Bleasdale's Bandits",   total:1580,gwPts:56,entry:467006 },
+  {rank:14,lastRank:14,name:'Danny Nugent',    nick:'DANNY', team:'Take my money FC',      total:1578,gwPts:60,entry:8223006}
+];
+
+// Money data (from Google Sheet - Money tab)
+const MONEY = {
+  STEER:  { winnings:67,    losses:0 },
+  SEAN:   { winnings:57,    losses:1 },
+  DANNY:  { winnings:54,    losses:6 },
+  BAZ:    { winnings:53,    losses:2 },
+  CAT:    { winnings:49.5,  losses:3 },
+  BLEASE: { winnings:47,    losses:6 },
+  ALEX:   { winnings:47,    losses:3 },
+  PGSM:   { winnings:46,    losses:2 },
+  BEN:    { winnings:44,    losses:1 },
+  JO:     { winnings:40,    losses:1 },
+  PASS:   { winnings:33,    losses:1 },
+  BOBBY:  { winnings:23.5,  losses:3 },
+  ADAM:   { winnings:20,    losses:1 },
+  ANDREA: { winnings:20,    losses:2 }
+};
+
+// Chips — wc1/bb1/tc1/fh1 = standard chips | wc2/bb2/tc2/fh2 = extra chips (given by FPL this season)
+// null = not yet used. Values = GW number when played.
+const CHIPS = {
+  STEER:  { wc1:16, bb1:11, tc1:6,  fh1:13, wc2:null, bb2:null, tc2:null, fh2:null },
+  BEN:    { wc1:6,  bb1:5,  tc1:17, fh1:13, wc2:null, bb2:null, tc2:26,   fh2:null },
+  PGSM:   { wc1:3,  bb1:19, tc1:13, fh1:4,  wc2:22,   bb2:null, tc2:null, fh2:31   },
+  SEAN:   { wc1:4,  bb1:19, tc1:18, fh1:null,wc2:25,  bb2:null, tc2:26,   fh2:null },
+  BAZ:    { wc1:10, bb1:16, tc1:18, fh1:19, wc2:null, bb2:27,   tc2:null, fh2:null },
+  CAT:    { wc1:19, bb1:null,tc1:18,fh1:null,wc2:null, bb2:null, tc2:null, fh2:31   },
+  ALEX:   { wc1:8,  bb1:13, tc1:6,  fh1:18, wc2:null, bb2:null, tc2:null, fh2:null },
+  ANDREA: { wc1:null,bb1:15,tc1:18, fh1:null,wc2:null, bb2:null, tc2:null, fh2:26   },
+  ADAM:   { wc1:8,  bb1:18, tc1:17, fh1:19, wc2:25,   bb2:null, tc2:null, fh2:31   },
+  BOBBY:  { wc1:11, bb1:null,tc1:13,fh1:14, wc2:null, bb2:null, tc2:null, fh2:31   },
+  PASS:   { wc1:6,  bb1:12, tc1:19, fh1:null,wc2:null, bb2:null, tc2:null, fh2:null },
+  JO:     { wc1:9,  bb1:4,  tc1:17, fh1:18, wc2:null, bb2:null, tc2:null, fh2:null },
+  BLEASE: { wc1:19, bb1:null,tc1:18,fh1:null,wc2:null, bb2:null, tc2:null, fh2:31   },
+  DANNY:  { wc1:5,  bb1:null,tc1:18,fh1:19, wc2:null, bb2:null, tc2:null, fh2:31   }
+};
+
+// The Needy List
+const NEEDY = [
+  { nick:'PASS',   name:'Sam Passmore', team:'No time United'  },
+  { nick:'SEAN',   name:'Sean Elliott', team:'Better Now'      },
+  { nick:'PGSM',   name:'Philip Green', team:'Mr 55p'          }
+];
+
+// Weekly Reports (editable — add new weeks here!)
+const REPORTS = [
+  { gw:32, winner:'Philip Green', winnerPts:77, runnerUp:'Danny Nugent', runnerUpPts:60,
+    loser:'Barry Heath', loserPts:39, avg:55.9, chips:'FH — Adam, Bleas, Bobby, Cat, Danny & Phil',
+    mention:'Tightest week of the season with 6 people getting between 56–59 pts. Phil being a big girl.',
+    fact:null },
+  { gw:31, winner:'Tom Steer', winnerPts:56, runnerUp:'Ben Tosh', runnerUpPts:57,
+    loser:'Barry Heath', loserPts:39, avg:53.8, chips:'Multiple Free Hits — the DGW panic was real',
+    mention:'GW31 saw 6 Free Hits played — the most chip carnage of the season.',
+    fact:'Danny holds the season high of 98 pts from GW17.' },
+  { gw:30, winner:'Sean Elliott', winnerPts:65, runnerUp:'Jo Steer', runnerUpPts:64,
+    loser:'Simon Bleasdale', loserPts:34, avg:50.5, chips:'None',
+    mention:'All the women climbing several places: Andrea, Jo & Sean.',
+    fact:null },
+  { gw:27, winner:'Tom Steer', winnerPts:53, runnerUp:'Barry Heath', runnerUpPts:51,
+    loser:'Simon Bleasdale', loserPts:28, avg:41.6, chips:'BB — Baz',
+    mention:"I'll take the win with 6.5m in the bank.",
+    fact:'Ben with 28 pts on the bench.' },
+  { gw:26, winner:'Barry Heath', winnerPts:81, runnerUp:'Adam Roberts', runnerUpPts:79,
+    loser:'Bobby Roberts', loserPts:44, avg:67.5, chips:'TC — Ben & Sean, FH — Andrea',
+    mention:"Ben & Sean's Gabriel Triple Captain.",
+    fact:null },
+  { gw:1, winner:'Andrea Elliott', winnerPts:65, runnerUp:'Barry Heath', runnerUpPts:64,
+    loser:'Bobby Roberts', loserPts:43, avg:53.8, chips:'None',
+    mention:'Passmore with 3 defenders out already.',
+    fact:'Bitcoin update: I give up. HF$P' }
+];
+
+// ═══════════════════ HELPERS ═══════════════════
+
+function playerByNick(nick) { return PLAYERS.find(p => p.nick === nick); }
+
+function calcRunningTotals(pts) {
+  let t=0; return pts.map(p => (t+=p, t));
+}
+
+function rankChangeHTML(curr, last) {
+  const diff = last - curr;
+  if (diff > 0) return `<span class="rank-change up">▲ ${diff}</span>`;
+  if (diff < 0) return `<span class="rank-change down">▼ ${Math.abs(diff)}</span>`;
+  return `<span class="rank-change same">—</span>`;
+}
+
+function stdDev(arr) {
+  const avg = arr.reduce((a,b)=>a+b,0)/arr.length;
+  const sq = arr.map(x=>(x-avg)**2);
+  return Math.sqrt(sq.reduce((a,b)=>a+b,0)/arr.length).toFixed(1);
+}
+
+// ═══════════════════ RENDER STANDINGS ═══════════════════
+
+function renderStandings() {
+  const leader = STANDINGS[0].total;
+  const tbody = document.getElementById('standingsTbody');
+  tbody.innerHTML = STANDINGS.map((p,i) => {
+    const isMe = CURRENT_USER && p.nick === CURRENT_USER;
+    const rowClass = [i===0?'rank-top':i===STANDINGS.length-1?'rank-bottom':'', isMe?'current-user-row':''].filter(Boolean).join(' ');
+    const gap = i === 0 ? '—' : `−${leader - p.total}`;
+    return `<tr class="${rowClass}">
+      <td class="rank rank-${p.rank}">${p.rank}</td>
+      <td><div class="player-name">${p.name}</div><div class="team-name">${p.team}</div></td>
+      <td class="gw-pts">${p.gwPts} pts</td>
+      <td class="pts-big">${p.total.toLocaleString()}</td>
+      <td style="color:var(--muted);font-size:13px;">${gap}</td>
+      <td>${rankChangeHTML(p.rank, p.lastRank)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════ RENDER STATS ═══════════════════
+
+function renderStats() {
+  const gws = Object.keys(GW_PTS.STEER).length;
+  const allPts = Object.values(GW_PTS).flat();
+  const highest = Math.max(...allPts);
+  const highestPlayer = Object.entries(GW_PTS).find(([,v])=>v.includes(highest))?.[0];
+  const highGW = GW_PTS[highestPlayer]?.indexOf(highest)+1;
+
+  // Overall average
+  const gwAvgs = Array.from({length:gws},(_,i)=>
+    Object.values(GW_PTS).map(p=>p[i]).reduce((a,b)=>a+b,0)/14
+  );
+  const seasonAvg = (gwAvgs.reduce((a,b)=>a+b,0)/gwAvgs.length).toFixed(1);
+
+  // Leader gap
+  const gap = STANDINGS[0].total - STANDINGS[1].total;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card gold">
+      <div class="label">League Leader</div>
+      <div class="value">${STANDINGS[0].total.toLocaleString()}</div>
+      <div class="sub">${STANDINGS[0].name} · ${STANDINGS[0].team}</div>
+    </div>
+    <div class="stat-card green">
+      <div class="label">Season High Score</div>
+      <div class="value">${highest}</div>
+      <div class="sub">${playerByNick(highestPlayer)?.name} · GW${highGW}</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="label">Season Avg Score</div>
+      <div class="value">${seasonAvg}</div>
+      <div class="sub">Per manager per gameweek</div>
+    </div>
+    <div class="stat-card red">
+      <div class="label">Leader's Gap</div>
+      <div class="value">+${gap}</div>
+      <div class="sub">Ahead of ${STANDINGS[1].name}</div>
+    </div>
+  `;
+}
+
+// ═══════════════════ TRAJECTORY CHART ═══════════════════
+
+let trajectoryChart;
+function renderTrajectory() {
+  const gws = Object.keys(GW_PTS.STEER).length;
+  const labels = Array.from({length:gws},(_,i)=>`GW${i+1}`);
+
+  const COLORS = [
+    '#ffd700','#00e676','#40a9ff','#ff5252','#ff9800','#e040fb',
+    '#00bcd4','#8bc34a','#f06292','#4fc3f7','#ffb74d','#aed581','#ba68c8','#ef9a9a'
+  ];
+
+  const datasets = PLAYERS.map((p,i) => ({
+    label: p.nick,
+    data: calcRunningTotals(GW_PTS[p.nick]),
+    borderColor: COLORS[i],
+    backgroundColor: COLORS[i]+'22',
+    borderWidth: p.nick==='STEER' ? 3 : 1.5,
+    pointRadius: 2,
+    tension: 0.3
+  }));
+
+  const ctx = document.getElementById('trajectoryChart').getContext('2d');
+  if (trajectoryChart) trajectoryChart.destroy();
+  trajectoryChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'right', labels:{ color:'#7a8fa8', font:{size:11}, boxWidth:12, padding:8 }},
+        tooltip:{ mode:'index', intersect:false, backgroundColor:'#1b2838', titleColor:'#e8edf3', bodyColor:'#7a8fa8' }
+      },
+      scales:{
+        x:{ grid:{ color:'#2c3e5044' }, ticks:{ color:'#7a8fa8', font:{size:10} } },
+        y:{ grid:{ color:'#2c3e5044' }, ticks:{ color:'#7a8fa8', font:{size:10} } }
+      },
+      interaction:{ mode:'nearest', axis:'x', intersect:false }
+    }
+  });
+}
+
+// ═══════════════════ WEEKLY WINNERS ═══════════════════
+
+let CURRENT_USER = null;
+
+function renderWeeklyWinners() {
+  const gws = GW_PTS.STEER.length;
+  const container = document.getElementById('weeklyWinners');
+  container.innerHTML = '';
+
+  if (!CURRENT_USER) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Select your name (top-left 👤 button) to see your personal week-by-week record.</p>';
+    return;
+  }
+
+  const userPts = GW_PTS[CURRENT_USER];
+  if (!userPts) return;
+
+  for (let g=0; g<gws; g++) {
+    const scores = PLAYERS.map(p=>({nick:p.nick,pts:GW_PTS[p.nick][g]}));
+    scores.sort((a,b)=>b.pts-a.pts);
+    const winner = scores[0];
+    const loser = scores[scores.length-1];
+    let cls = 'mid';
+    if (winner.nick===CURRENT_USER) cls='won';
+    else if (loser.nick===CURRENT_USER) cls='lost';
+    const div = document.createElement('div');
+    div.className=`streak-gw ${cls}`;
+    div.title=`GW${g+1}: ${winner.nick} won (${winner.pts}pts) · ${loser.nick} lost (${loser.pts}pts) · You: ${userPts[g]}pts`;
+    div.textContent=g+1;
+    container.appendChild(div);
+  }
+}
+
+// ═══════════════════ AVG CHART ═══════════════════
+
+let avgChart;
+function renderAvgChart() {
+  const gws = GW_PTS.STEER.length;
+  const labels = Array.from({length:gws},(_,i)=>`GW${i+1}`);
+  const avgs = Array.from({length:gws},(_,i)=>
+    (Object.values(GW_PTS).map(p=>p[i]).reduce((a,b)=>a+b,0)/14).toFixed(1)
+  );
+  const ctx = document.getElementById('avgChart').getContext('2d');
+  if (avgChart) avgChart.destroy();
+  avgChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Avg Score',
+        data:avgs,
+        backgroundColor:'rgba(0,230,118,0.3)',
+        borderColor:'#00e676',
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{color:'#2c3e5044'}, ticks:{color:'#7a8fa8',font:{size:9}} },
+        y:{ grid:{color:'#2c3e5044'}, ticks:{color:'#7a8fa8',font:{size:9}} }
+      }
+    }
+  });
+}
+
+// ═══════════════════ MONEY TABLE ═══════════════════
+
+function renderMoney() {
+  const sorted = Object.entries(MONEY).sort((a,b)=>b[1].winnings-a[1].winnings);
+  const tbody = document.getElementById('moneyTbody');
+  tbody.innerHTML = sorted.map(([nick,d],i) => {
+    const p = playerByNick(nick);
+    const isMe = CURRENT_USER && nick === CURRENT_USER;
+    return `<tr class="${isMe?'current-user-row':''}">
+      <td class="rank rank-${i+1}">${i+1}</td>
+      <td><div class="player-name">${p?.name||nick}</div></td>
+      <td><div class="team-name">${p?.team||''}</div></td>
+      <td class="money">£${d.winnings.toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+
+  // Loser table — sorted by most losses DESC, then least losses at bottom
+  const sortedL = Object.entries(MONEY).sort((a,b)=>b[1].losses-a[1].losses);
+  const tbodyL = document.getElementById('loserTbody');
+  tbodyL.innerHTML = sortedL.map(([nick,d],i) => {
+    const p = playerByNick(nick);
+    const isMe = CURRENT_USER && nick === CURRENT_USER;
+    const lossClass = d.losses===0?'zero-losses':'losses-val';
+    return `<tr class="${isMe?'current-user-row':''}">
+      <td class="rank">${i+1}</td>
+      <td><div class="player-name">${p?.name||nick}</div></td>
+      <td><div class="team-name">${p?.team||''}</div></td>
+      <td class="${lossClass}">${d.losses===0?'🏆 Zero!':d.losses+'× bottom'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════ CHIPS TABLE ═══════════════════
+
+function renderChips() {
+  const cell1 = (gw, cls, label) => gw
+    ? `<td><span class="chip-used ${cls}">${label} ${gw}</span></td>`
+    : `<td><span class="chip-avail badge badge-green">✓</span></td>`;
+  const cell2 = (gw, cls, label) => gw
+    ? `<td><span class="chip-used ${cls}">${label} ${gw}</span></td>`
+    : `<td><span class="chip-avail" style="color:var(--border);">—</span></td>`;
+  const div = `<td class="chip-divider"></td>`;
+
+  const tbody = document.getElementById('chipsTbody');
+  tbody.innerHTML = PLAYERS.map(p => {
+    const c = CHIPS[p.nick] || {};
+    const isMe = CURRENT_USER && p.nick === CURRENT_USER;
+    return `<tr class="${isMe?'current-user-row':''}">
+      <td class="player-col" style="${isMe?'color:var(--accent);font-weight:700;':''}">${p.nick}</td>
+      ${cell1(c.wc1,'chip-wc1','WC')}
+      ${cell1(c.bb1,'chip-bb','BB')}
+      ${cell1(c.tc1,'chip-tc','TC')}
+      ${cell1(c.fh1,'chip-fh','FH')}
+      ${div}
+      ${cell2(c.wc2,'chip-wc2','WC')}
+      ${cell2(c.bb2,'chip-bb','BB')}
+      ${cell2(c.tc2,'chip-tc','TC')}
+      ${cell2(c.fh2,'chip-fh2','FH')}
+    </tr>`;
+  }).join('');
+
+  // Danger zone — chips still available
+  const dz = document.getElementById('dangerZone');
+  dz.innerHTML = PLAYERS.map(p => {
+    const c = CHIPS[p.nick]||{};
+    const remaining = [];
+    if(!c.wc1) remaining.push(`<span class="chip-used chip-wc1">WC</span>`);
+    if(!c.bb1) remaining.push(`<span class="chip-used chip-bb">BB</span>`);
+    if(!c.tc1) remaining.push(`<span class="chip-used chip-tc">TC</span>`);
+    if(!c.fh1) remaining.push(`<span class="chip-used chip-fh">FH</span>`);
+    if(!c.wc2) remaining.push(`<span class="chip-used chip-wc2" style="opacity:0.7;">WC2</span>`);
+    if(!c.bb2) remaining.push(`<span class="chip-used chip-bb" style="opacity:0.7;">BB2</span>`);
+    if(!c.tc2) remaining.push(`<span class="chip-used chip-tc" style="opacity:0.7;">TC2</span>`);
+    if(!c.fh2) remaining.push(`<span class="chip-used chip-fh2" style="opacity:0.7;">FH2</span>`);
+    const hasChips = remaining.length > 0;
+    return `<div class="danger-player ${hasChips?'has-chips':'no-chips'}">
+      <div class="dp-name">${p.nick}</div>
+      <div class="dp-chips">${remaining.length?remaining.join(''):'<span style="color:var(--muted);font-size:11px;">All used ✓</span>'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════ REPORTS ═══════════════════
+
+function renderReports() {
+  const latest = REPORTS[0];
+  document.getElementById('latestReport').innerHTML = `
+    <div class="report-header">
+      <div class="report-gw">⚡ Latest · Gameweek ${latest.gw}</div>
+      <div class="report-winner">Week Winner: ${latest.winner} — ${latest.winnerPts} pts 🏆</div>
+      <div class="report-grid">
+        <div class="report-item">
+          <div class="rlabel">🥇 Winner</div>
+          <div class="rvalue winner-val">${latest.winner} (${latest.winnerPts})</div>
+        </div>
+        <div class="report-item">
+          <div class="rlabel">🥈 Runner Up</div>
+          <div class="rvalue">${latest.runnerUp} (${latest.runnerUpPts})</div>
+        </div>
+        <div class="report-item">
+          <div class="rlabel">💀 Loser</div>
+          <div class="rvalue loser-val">${latest.loser} (${latest.loserPts})</div>
+        </div>
+        <div class="report-item">
+          <div class="rlabel">📊 Avg Score</div>
+          <div class="rvalue">${latest.avg} pts</div>
+        </div>
+        <div class="report-item">
+          <div class="rlabel">🎰 Chips Used</div>
+          <div class="rvalue" style="font-size:12px;">${latest.chips}</div>
+        </div>
+      </div>
+      ${latest.mention?`<div class="report-mention">⭐ ${latest.mention}</div>`:''}
+      ${latest.fact?`<div class="report-fact">💡 ${latest.fact}</div>`:''}
+    </div>
+  `;
+
+  const archive = document.getElementById('archiveReports');
+  archive.innerHTML = REPORTS.slice(1).map((r,i) => `
+    <div class="archive-week">
+      <div class="archive-header" onclick="toggleArchive(${i})">
+        <div>
+          <div class="aw-title">Gameweek ${r.gw}</div>
+          <div class="aw-meta">Winner: ${r.winner} (${r.winnerPts}pts) · Loser: ${r.loser} (${r.loserPts}pts)</div>
+        </div>
+        <div class="toggle" id="toggle-${i}">＋</div>
+      </div>
+      <div class="archive-body" id="archive-body-${i}">
+        <div class="archive-mini">
+          <div class="am-item"><div class="aml">Winner</div><div class="amv" style="color:var(--accent)">${r.winner} · ${r.winnerPts}pts</div></div>
+          <div class="am-item"><div class="aml">Runner Up</div><div class="amv">${r.runnerUp} · ${r.runnerUpPts}pts</div></div>
+          <div class="am-item"><div class="aml">Loser</div><div class="amv" style="color:var(--red)">${r.loser} · ${r.loserPts}pts</div></div>
+          <div class="am-item"><div class="aml">Avg Score</div><div class="amv">${r.avg}pts</div></div>
+          <div class="am-item"><div class="aml">Chips</div><div class="amv">${r.chips}</div></div>
+        </div>
+        ${r.mention?`<div class="report-mention" style="margin-top:10px;">⭐ ${r.mention}</div>`:''}
+        ${r.fact?`<div class="report-fact" style="margin-top:8px;">💡 ${r.fact}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleArchive(i) {
+  const body = document.getElementById(`archive-body-${i}`);
+  const tog = document.getElementById(`toggle-${i}`);
+  body.classList.toggle('open');
+  tog.textContent = body.classList.contains('open') ? '－' : '＋';
+}
+
+// ═══════════════════ NEEDY LIST ═══════════════════
+
+function renderNeedy() {
+  const emojis = ['😤','😭','🙏'];
+  document.getElementById('needyList').innerHTML = NEEDY.map((n,i)=>`
+    <div class="needy-item">
+      <div class="ni-emoji">${emojis[i]||'😬'}</div>
+      <div class="ni-name">${n.name}</div>
+      <div class="ni-team">${n.team}</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════ FORM TABLE ═══════════════════
+
+function renderForm() {
+  const lastN = 5;
+  const totalGWs = GW_PTS.STEER.length;
+  const start = totalGWs - lastN;
+  // Update column headers dynamically
+  const headerRow = document.getElementById('formHeaderRow');
+  if (headerRow) {
+    const gwNums = Array.from({length:lastN},(_,i)=>start+i+1);
+    headerRow.innerHTML = `<th>Manager</th>${gwNums.map(g=>`<th>GW${g}</th>`).join('')}<th>Last 5 Total</th><th>Form</th>`;
+  }
+  const rows = PLAYERS.map(p => {
+    const recentPts = GW_PTS[p.nick].slice(start);
+    const total5 = recentPts.reduce((a,b)=>a+b,0);
+    return { p, recentPts, total5 };
+  }).sort((a,b)=>b.total5-a.total5);
+
+  const allRecent = PLAYERS.map(p=>GW_PTS[p.nick].slice(start).reduce((a,b)=>a+b,0));
+  const maxForm = Math.max(...allRecent);
+  const minForm = Math.min(...allRecent);
+
+  document.getElementById('formTbody').innerHTML = rows.map(({p,recentPts,total5},i) => {
+    const isHot = total5 === maxForm;
+    const isCold = total5 === minForm;
+    const formEmoji = isHot ? '🔥' : isCold ? '🥶' : total5 > 270 ? '📈' : total5 < 230 ? '📉' : '➡️';
+    const gwPts = recentPts.map(v=>`<td style="color:${v>=60?'var(--accent)':v<=40?'var(--red)':'var(--text)'}">${v}</td>`).join('');
+    return `<tr>
+      <td><div class="player-name">${p.nick}</div><div class="team-name" style="font-size:10px;">${p.name}</div></td>
+      ${gwPts}
+      <td style="font-weight:800;color:${isHot?'var(--accent)':isCold?'var(--red)':'var(--text)'};">${total5}</td>
+      <td>${formEmoji}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════ HIGHEST SCORES ═══════════════════
+
+function renderHighest() {
+  const all = [];
+  PLAYERS.forEach(p => {
+    GW_PTS[p.nick].forEach((pts,i) => {
+      all.push({nick:p.nick, name:p.name, gw:i+1, pts});
+    });
+  });
+  all.sort((a,b)=>b.pts-a.pts);
+  const top10 = all.slice(0,10);
+  document.getElementById('highestTbody').innerHTML = top10.map((e,i)=>`
+    <tr>
+      <td class="rank rank-${i+1}">${i+1}</td>
+      <td><div class="player-name">${e.nick}</div><div class="team-name">${e.name}</div></td>
+      <td class="gw-pts">GW${e.gw}</td>
+      <td style="font-weight:800;color:${i===0?'var(--gold)':'var(--text)'};">${e.pts}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════ CONSISTENCY ═══════════════════
+
+function renderConsistency() {
+  const rows = PLAYERS.map(p => {
+    const avg = (GW_PTS[p.nick].reduce((a,b)=>a+b,0)/GW_PTS[p.nick].length).toFixed(1);
+    const sd = stdDev(GW_PTS[p.nick]);
+    return {p, avg, sd: parseFloat(sd)};
+  }).sort((a,b)=>a.sd-b.sd);
+
+  document.getElementById('consistencyTbody').innerHTML = rows.map(({p,avg,sd},i)=>`
+    <tr>
+      <td class="rank rank-${i+1}">${i+1}</td>
+      <td><div class="player-name">${p.nick}</div><div class="team-name">${p.name}</div></td>
+      <td>${avg}</td>
+      <td style="color:${sd<15?'var(--accent)':sd>20?'var(--red)':'var(--text)'};">${sd}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════ WELCOME SCREEN ═══════════════════
+
+function buildWelcomeGrid() {
+  const grid = document.getElementById('welcomeGrid');
+  grid.innerHTML = PLAYERS.map(p => `
+    <div class="welcome-player" onclick="selectUser('${p.nick}')">
+      <div class="wp-nick">${p.nick}</div>
+      <div class="wp-name">${p.name}</div>
+      <div class="wp-team">${p.team}</div>
+    </div>
+  `).join('');
+}
+
+function showWelcome() {
+  document.getElementById('welcomeOverlay').classList.remove('hidden');
+}
+
+function selectUser(nick) {
+  CURRENT_USER = nick;
+  const p = PLAYERS.find(x=>x.nick===nick);
+  document.getElementById('viewerBadge').textContent = `👤 ${p?.nick||nick}`;
+  document.getElementById('welcomeOverlay').classList.add('hidden');
+  renderWeeklyWinners();
+  renderStandings();
+  renderMoney();
+  renderChips();
+}
+
+// ═══════════════════ REFRESH (LIVE DATA) ═══════════════════
+
+async function refreshData() {
+  const btn = document.querySelector('.refresh-btn');
+  btn.classList.add('loading');
+  btn.textContent = '↻ Refreshing...';
+
+  const PROXY = 'https://corsproxy.io/?';
+  const API = 'https://fantasy.premierleague.com/api/';
+
+  try {
+    // Try direct first, then proxy
+    let data;
+    try {
+      const r = await fetch(`${API}leagues-classic/46235/standings/`);
+      data = await r.json();
+    } catch {
+      const r = await fetch(`${PROXY}${encodeURIComponent(API+'leagues-classic/46235/standings/')}`);
+      data = await r.json();
+    }
+
+    const results = data.standings?.results || [];
+    if (results.length > 0) {
+      STANDINGS = results.map(r => {
+        const player = PLAYERS.find(p=>p.entry===r.entry);
+        return {
+          rank: r.rank, lastRank: r.last_rank,
+          name: r.player_name, nick: player?.nick || r.player_name,
+          team: r.entry_name, total: r.total, gwPts: r.event_total,
+          entry: r.entry
+        };
+      });
+      STANDINGS.sort((a,b)=>a.rank-b.rank);
+
+      // Refresh GW history for all players — applying transfer deductions
+      for (const p of PLAYERS) {
+        try {
+          const hr = await fetch(`${PROXY}${encodeURIComponent(API+'entry/'+p.entry+'/history/')}`);
+          const hd = await hr.json();
+          if (hd.current && hd.current.length > 0) {
+            // Net score = points - event_transfers_cost (hit deductions already included)
+            GW_PTS[p.nick] = hd.current.map(g => g.points - g.event_transfers_cost);
+          }
+        } catch {}
+      }
+
+      document.getElementById('gwBadge').textContent = `GW ${GW_PTS[PLAYERS[0].nick].length}`;
+      document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+      renderStandings();
+      renderTrajectory();
+      renderStats();
+      alert('✅ Data refreshed successfully!');
+    }
+  } catch(e) {
+    alert('⚠️ Could not fetch live data — showing cached standings. Try again later.');
+  }
+
+  btn.classList.remove('loading');
+  btn.innerHTML = '↺ Live Refresh';
+}
+
+// ═══════════════════ TAB NAVIGATION ═══════════════════
+
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id)?.classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+// ═══════════════════ INIT ═══════════════════
+
+function init() {
+  buildWelcomeGrid();
+  renderStats();
+  renderStandings();
+  renderTrajectory();
+  renderWeeklyWinners();
+  renderAvgChart();
+  renderMoney();
+  renderChips();
+  renderReports();
+  renderNeedy();
+  renderForm();
+  renderHighest();
+  renderConsistency();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
