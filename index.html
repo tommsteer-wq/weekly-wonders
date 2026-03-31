@@ -1619,10 +1619,8 @@ async function startSession(nick) {
   sessionStart  = new Date();
   sessionClicks = 0;
   try {
-    const { data } = await db.from('player_sessions')
-      .insert({ player_nick: nick, logged_in_at: sessionStart.toISOString(), click_count: 0 })
-      .select('id').single();
-    if (data) sessionRowId = data.id;
+    const { data, error } = await db.rpc('insert_session', { p_nick: nick, p_time: sessionStart.toISOString() });
+    if (!error && data) sessionRowId = data;
   } catch(e) { console.warn('Session start failed', e); }
 }
 
@@ -1630,11 +1628,12 @@ async function pushSessionUpdate(final = false) {
   if (!sessionRowId) return;
   const secs = Math.round((new Date() - sessionStart) / 1000);
   try {
-    await db.from('player_sessions').update({
-      click_count:      sessionClicks,
-      duration_seconds: secs,
-      ...(final ? { logged_out_at: new Date().toISOString() } : {})
-    }).eq('id', sessionRowId);
+    await db.rpc('update_session', {
+      p_id:      sessionRowId,
+      p_clicks:  sessionClicks,
+      p_secs:    secs,
+      p_out:     final ? new Date().toISOString() : null
+    });
   } catch(e) { console.warn('Session update failed', e); }
 }
 
@@ -1714,8 +1713,7 @@ async function loadAdminData() {
   summary.innerHTML = '';
 
   try {
-    const { data, error } = await db.from('player_sessions')
-      .select('*').order('logged_in_at', { ascending: false });
+    const { data, error } = await db.rpc('get_all_sessions');
     if (error) throw error;
     if (!data || data.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No sessions recorded yet.</td></tr>';
