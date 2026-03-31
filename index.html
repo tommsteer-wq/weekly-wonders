@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weekly Wonders 🏆 3rd Edition</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #0e1726;
@@ -451,6 +452,19 @@
 </head>
 <body>
 
+<!-- ═══════════════════════ PASSWORD OVERLAY (STEER only) ═══════════════════════ -->
+<div class="welcome-overlay" id="passwordOverlay" style="display:none;">
+  <div class="welcome-logo">🔒</div>
+  <div class="welcome-title">Admin Access</div>
+  <div class="welcome-sub">Enter your PIN to continue</div>
+  <input type="password" id="pinInput" placeholder="PIN" maxlength="10"
+    style="margin:20px auto;display:block;padding:12px 20px;font-size:20px;border-radius:10px;border:2px solid var(--accent);background:var(--card2);color:var(--text);text-align:center;width:140px;letter-spacing:6px;"
+    onkeydown="if(event.key==='Enter')checkPin()">
+  <button onclick="checkPin()" style="margin-top:10px;padding:12px 32px;background:var(--accent);color:#000;font-weight:700;border:none;border-radius:8px;font-size:16px;cursor:pointer;">Enter</button>
+  <div id="pinError" style="color:var(--red);margin-top:12px;font-size:13px;"></div>
+  <button onclick="cancelPin()" style="margin-top:16px;padding:8px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;">← Back</button>
+</div>
+
 <!-- ═══════════════════════ WELCOME SCREEN ═══════════════════════ -->
 <div class="welcome-overlay" id="welcomeOverlay">
   <div class="welcome-logo">⚽</div>
@@ -487,6 +501,7 @@
   <div class="tab" onclick="showTab('reports',this)">📋 Reports</div>
   <div class="tab" onclick="showTab('extras',this)">⭐ Extras</div>
   <div class="tab" onclick="showTab('prizes',this)">🏅 Prize Structure</div>
+  <div class="tab" id="adminTab" onclick="showTab('admin',this)" style="display:none;">🔐 Admin</div>
 </div>
 
 <!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
@@ -750,6 +765,57 @@
       <div class="prize-label" style="font-size:14px;color:var(--muted);margin-bottom:6px;">TOTAL PRIZE POT</div>
       <div class="big">£1,064</div>
       <div class="sub">14 managers × £76 entry = £1,064</div>
+    </div>
+  </div>
+
+  <!-- ─────── ADMIN TAB ─────── -->
+  <div class="section" id="tab-admin">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div class="card-title" style="font-size:18px;margin:0;">🔐 Admin Panel — League Activity</div>
+      <button onclick="loadAdminData()" style="padding:8px 18px;background:var(--accent);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:13px;">↺ Refresh</button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div id="adminSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;"></div>
+
+    <!-- Sessions Table -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> All Sessions</div>
+      <div class="table-wrap">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);">
+              <th style="padding:8px;text-align:left;">Player</th>
+              <th style="padding:8px;text-align:left;">Logged In</th>
+              <th style="padding:8px;text-align:right;">Duration</th>
+              <th style="padding:8px;text-align:right;">Clicks</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody">
+            <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Per-player Stats -->
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title"><span class="icon">👥</span> Per Player Stats</div>
+      <div class="table-wrap">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);">
+              <th style="padding:8px;text-align:left;">Player</th>
+              <th style="padding:8px;text-align:right;">Total Logins</th>
+              <th style="padding:8px;text-align:right;">Avg Duration</th>
+              <th style="padding:8px;text-align:right;">Avg Clicks</th>
+            </tr>
+          </thead>
+          <tbody id="adminPlayerBody">
+            <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1431,17 +1497,7 @@ function showWelcome() {
   document.getElementById('welcomeOverlay').classList.remove('hidden');
 }
 
-function selectUser(nick) {
-  CURRENT_USER = nick;
-  const p = PLAYERS.find(x=>x.nick===nick);
-  document.getElementById('viewerBadge').textContent = `👤 ${p?.nick||nick}`;
-  document.getElementById('welcomeOverlay').classList.add('hidden');
-  renderWeeklyWinners();
-  renderStandings();
-  renderMoney();
-  renderChips();
-  renderTrajectory();
-}
+// selectUser is defined below in the Supabase section (handles PIN for STEER)
 
 // ═══════════════════ REFRESH (LIVE DATA) ═══════════════════
 
@@ -1511,6 +1567,7 @@ function showTab(id, el) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id)?.classList.add('active');
   if(el) el.classList.add('active');
+  if(id === 'admin') loadAdminData();
 }
 
 // ═══════════════════ INIT ═══════════════════
@@ -1532,6 +1589,201 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════ SUPABASE & TRACKING ═══════════════════
+
+const SUPABASE_URL = 'https://syuvoamyoxmmdcdumicy.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_JbCRHpHEqFvPqKlLka5sYg_NhSOerx6';
+const ADMIN_PIN    = '39373';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let sessionRowId  = null;
+let sessionClicks = 0;
+let sessionStart  = null;
+
+// Count every click on the page
+document.addEventListener('click', () => {
+  if (!sessionRowId) return;
+  sessionClicks++;
+  // Write to Supabase every 10 clicks so we don't flood it
+  if (sessionClicks % 10 === 0) pushSessionUpdate();
+});
+
+// Save when user leaves or hides the tab
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pushSessionUpdate(true);
+});
+window.addEventListener('beforeunload', () => pushSessionUpdate(true));
+
+async function startSession(nick) {
+  sessionStart  = new Date();
+  sessionClicks = 0;
+  try {
+    const { data } = await db.from('player_sessions')
+      .insert({ player_nick: nick, logged_in_at: sessionStart.toISOString(), click_count: 0 })
+      .select('id').single();
+    if (data) sessionRowId = data.id;
+  } catch(e) { console.warn('Session start failed', e); }
+}
+
+async function pushSessionUpdate(final = false) {
+  if (!sessionRowId) return;
+  const secs = Math.round((new Date() - sessionStart) / 1000);
+  try {
+    await db.from('player_sessions').update({
+      click_count:      sessionClicks,
+      duration_seconds: secs,
+      ...(final ? { logged_out_at: new Date().toISOString() } : {})
+    }).eq('id', sessionRowId);
+  } catch(e) { console.warn('Session update failed', e); }
+}
+
+// ═══════════════════ PASSWORD PROMPT (STEER only) ═══════════════════
+
+let pendingNick = null;
+
+function checkPin() {
+  const val = document.getElementById('pinInput').value;
+  if (val === ADMIN_PIN) {
+    document.getElementById('passwordOverlay').style.display = 'none';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinError').textContent = '';
+    completeLogin(pendingNick);
+  } else {
+    document.getElementById('pinError').textContent = 'Wrong PIN — try again.';
+    document.getElementById('pinInput').value = '';
+  }
+}
+
+function cancelPin() {
+  document.getElementById('passwordOverlay').style.display = 'none';
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('welcomeOverlay').classList.remove('hidden');
+}
+
+// ═══════════════════ UPDATED selectUser ═══════════════════
+
+function selectUser(nick) {
+  if (nick === 'STEER') {
+    pendingNick = nick;
+    document.getElementById('welcomeOverlay').classList.add('hidden');
+    document.getElementById('passwordOverlay').style.display = 'flex';
+    document.getElementById('passwordOverlay').style.flexDirection = 'column';
+    document.getElementById('passwordOverlay').style.alignItems = 'center';
+    document.getElementById('passwordOverlay').style.justifyContent = 'center';
+    setTimeout(() => document.getElementById('pinInput').focus(), 100);
+  } else {
+    completeLogin(nick);
+  }
+}
+
+function completeLogin(nick) {
+  CURRENT_USER = nick;
+  const p = PLAYERS.find(x => x.nick === nick);
+  document.getElementById('viewerBadge').textContent = `👤 ${p?.nick || nick}`;
+  document.getElementById('welcomeOverlay').classList.add('hidden');
+
+  // Show admin tab only for STEER
+  const adminTab = document.getElementById('adminTab');
+  if (nick === 'STEER') {
+    adminTab.style.display = '';
+  } else {
+    adminTab.style.display = 'none';
+    // If somehow on admin tab, switch to overview
+    const adminPane = document.getElementById('tab-admin');
+    if (adminPane?.classList.contains('active')) showTab('overview', document.querySelector('.tab'));
+  }
+
+  renderWeeklyWinners();
+  renderStandings();
+  renderMoney();
+  renderChips();
+  renderTrajectory();
+  startSession(nick);
+}
+
+// ═══════════════════ ADMIN PANEL ═══════════════════
+
+async function loadAdminData() {
+  const tbody   = document.getElementById('adminTableBody');
+  const pbody   = document.getElementById('adminPlayerBody');
+  const summary = document.getElementById('adminSummary');
+  tbody.innerHTML   = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>';
+  pbody.innerHTML   = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>';
+  summary.innerHTML = '';
+
+  try {
+    const { data, error } = await db.from('player_sessions')
+      .select('*').order('logged_in_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No sessions recorded yet.</td></tr>';
+      pbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No data yet.</td></tr>';
+      return;
+    }
+
+    // ── Summary cards ──
+    const totalLogins   = data.length;
+    const uniquePlayers = [...new Set(data.map(r => r.player_nick))].length;
+    const avgDuration   = Math.round(data.filter(r => r.duration_seconds).reduce((a, r) => a + r.duration_seconds, 0) / (data.filter(r => r.duration_seconds).length || 1));
+    const mostActive    = Object.entries(data.reduce((acc, r) => { acc[r.player_nick] = (acc[r.player_nick]||0)+1; return acc; }, {}))
+                               .sort((a,b) => b[1]-a[1])[0];
+    const fmtDur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+
+    summary.innerHTML = [
+      ['🔢', 'Total Logins',    totalLogins],
+      ['👥', 'Unique Players',  uniquePlayers],
+      ['⏱️', 'Avg Session',    avgDuration ? fmtDur(avgDuration) : '—'],
+      ['🏆', 'Most Active',     mostActive ? `${mostActive[0]} (${mostActive[1]})` : '—']
+    ].map(([ico, label, val]) => `
+      <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
+        <div style="font-size:22px;">${ico}</div>
+        <div style="font-size:11px;color:var(--muted);margin:4px 0;">${label}</div>
+        <div style="font-size:18px;font-weight:800;color:var(--accent);">${val}</div>
+      </div>`).join('');
+
+    // ── All sessions table ──
+    tbody.innerHTML = data.map(r => {
+      const dt  = new Date(r.logged_in_at);
+      const dateStr = dt.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+      const timeStr = dt.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      const dur = r.duration_seconds ? fmtDur(r.duration_seconds) : '—';
+      const isMe = r.player_nick === 'STEER';
+      return `<tr style="${isMe ? 'background:rgba(0,255,135,0.05);' : ''}border-bottom:1px solid var(--border);">
+        <td style="padding:10px 8px;font-weight:${isMe?'700':'400'};color:${isMe?'var(--accent)':'var(--text)'};">${r.player_nick}</td>
+        <td style="padding:10px 8px;font-size:12px;color:var(--muted);">${dateStr} ${timeStr}</td>
+        <td style="padding:10px 8px;text-align:right;font-size:13px;">${dur}</td>
+        <td style="padding:10px 8px;text-align:right;font-size:13px;">${r.click_count ?? 0}</td>
+      </tr>`;
+    }).join('');
+
+    // ── Per-player summary ──
+    const perPlayer = {};
+    data.forEach(r => {
+      if (!perPlayer[r.player_nick]) perPlayer[r.player_nick] = { logins: 0, totalDur: 0, durCount: 0, totalClicks: 0 };
+      perPlayer[r.player_nick].logins++;
+      if (r.duration_seconds) { perPlayer[r.player_nick].totalDur += r.duration_seconds; perPlayer[r.player_nick].durCount++; }
+      perPlayer[r.player_nick].totalClicks += (r.click_count ?? 0);
+    });
+    pbody.innerHTML = Object.entries(perPlayer)
+      .sort((a,b) => b[1].logins - a[1].logins)
+      .map(([nick, s]) => {
+        const avgDur  = s.durCount ? fmtDur(Math.round(s.totalDur / s.durCount)) : '—';
+        const avgClks = s.logins   ? Math.round(s.totalClicks / s.logins)         : 0;
+        const isMe    = nick === 'STEER';
+        return `<tr style="${isMe?'background:rgba(0,255,135,0.05);':''}border-bottom:1px solid var(--border);">
+          <td style="padding:10px 8px;font-weight:700;color:${isMe?'var(--accent)':'var(--text)'};">${nick}</td>
+          <td style="padding:10px 8px;text-align:right;">${s.logins}</td>
+          <td style="padding:10px 8px;text-align:right;font-size:13px;">${avgDur}</td>
+          <td style="padding:10px 8px;text-align:right;font-size:13px;">${avgClks}</td>
+        </tr>`;
+      }).join('');
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--red);">Error loading data: ${e.message}</td></tr>`;
+  }
+}
 </script>
 </body>
 </html>
