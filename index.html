@@ -1615,12 +1615,30 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('beforeunload', () => pushSessionUpdate(true));
 
+async function sbFetch(path, method, body) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    method: method || 'GET',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.ok ? res.json() : null;
+}
+
 async function startSession(nick) {
   sessionStart  = new Date();
   sessionClicks = 0;
   try {
-    const { data, error } = await db.rpc('insert_session', { p_nick: nick, p_time: sessionStart.toISOString() });
-    if (!error && data) sessionRowId = data;
+    const data = await sbFetch('player_sessions', 'POST', {
+      player_nick: nick,
+      logged_in_at: sessionStart.toISOString(),
+      click_count: 0
+    });
+    if (data && data[0]) sessionRowId = data[0].id;
   } catch(e) { console.warn('Session start failed', e); }
 }
 
@@ -1628,12 +1646,9 @@ async function pushSessionUpdate(final = false) {
   if (!sessionRowId) return;
   const secs = Math.round((new Date() - sessionStart) / 1000);
   try {
-    await db.rpc('update_session', {
-      p_id:      sessionRowId,
-      p_clicks:  sessionClicks,
-      p_secs:    secs,
-      p_out:     final ? new Date().toISOString() : null
-    });
+    const body = { click_count: sessionClicks, duration_seconds: secs };
+    if (final) body.logged_out_at = new Date().toISOString();
+    await sbFetch('player_sessions?id=eq.' + sessionRowId, 'PATCH', body);
   } catch(e) { console.warn('Session update failed', e); }
 }
 
@@ -1713,8 +1728,9 @@ async function loadAdminData() {
   summary.innerHTML = '';
 
   try {
-    const { data, error } = await db.rpc('get_all_sessions');
-    if (error) throw error;
+    const data = await sbFetch('player_sessions?order=logged_in_at.desc');
+    if (!data) throw new Error('No response from database');
+    const error = null;
     if (!data || data.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No sessions recorded yet.</td></tr>';
       pbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No data yet.</td></tr>';
@@ -1785,4 +1801,3 @@ async function loadAdminData() {
 </script>
 </body>
 </html>
-
