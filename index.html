@@ -1592,10 +1592,8 @@ document.addEventListener('DOMContentLoaded', init);
 
 // ═══════════════════ SUPABASE & TRACKING ═══════════════════
 
-const SUPABASE_URL = 'https://syuvoamyoxmmdcdumicy.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_JbCRHpHEqFvPqKlLka5sYg_NhSOerx6';
-const ADMIN_PIN    = '39373';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQG7rbVCHCc7fGXXYIf9105rBUq8_MyI_4jkfFGzDFAISrKVEHtvK0nySHEFRLEpkmnA/exec';
+const ADMIN_PIN  = '39373';
 
 let sessionRowId  = null;
 let sessionClicks = 0;
@@ -1615,41 +1613,30 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('beforeunload', () => pushSessionUpdate(true));
 
-async function sbFetch(path, method, body) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
-    method: method || 'GET',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : ''
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  return res.ok ? res.json() : null;
+async function gsGet(params) {
+  try {
+    const qs = new URLSearchParams(params).toString();
+    await fetch(SCRIPT_URL + '?' + qs, { redirect: 'follow' });
+  } catch(e) { console.warn('Sheet call failed', e); }
 }
 
 async function startSession(nick) {
   sessionStart  = new Date();
   sessionClicks = 0;
-  try {
-    const data = await sbFetch('player_sessions', 'POST', {
-      player_nick: nick,
-      logged_in_at: sessionStart.toISOString(),
-      click_count: 0
-    });
-    if (data && data[0]) sessionRowId = data[0].id;
-  } catch(e) { console.warn('Session start failed', e); }
+  sessionRowId  = nick + '_' + sessionStart.getTime();
+  gsGet({ action: 'start', id: sessionRowId, nick, time: sessionStart.toISOString() });
 }
 
 async function pushSessionUpdate(final = false) {
   if (!sessionRowId) return;
   const secs = Math.round((new Date() - sessionStart) / 1000);
-  try {
-    const body = { click_count: sessionClicks, duration_seconds: secs };
-    if (final) body.logged_out_at = new Date().toISOString();
-    await sbFetch('player_sessions?id=eq.' + sessionRowId, 'PATCH', body);
-  } catch(e) { console.warn('Session update failed', e); }
+  gsGet({
+    action: 'update',
+    id: sessionRowId,
+    duration: secs,
+    clicks: sessionClicks,
+    loggedOut: final ? new Date().toISOString() : ''
+  });
 }
 
 // ═══════════════════ PASSWORD PROMPT (STEER only) ═══════════════════
@@ -1728,8 +1715,14 @@ async function loadAdminData() {
   summary.innerHTML = '';
 
   try {
-    const data = await sbFetch('player_sessions?order=logged_in_at.desc');
-    if (!data) throw new Error('No response from database');
+    const res  = await fetch(SCRIPT_URL + '?action=read', { redirect: 'follow' });
+    const rows = await res.json();
+    // rows[0] is the header row, rows[1+] are data
+    const data = rows.slice(1).map(r => ({
+      id: r[0], player_nick: r[1],
+      logged_in_at: r[2], logged_out_at: r[3],
+      duration_seconds: r[4] || 0, click_count: r[5] || 0
+    })).reverse();
     const error = null;
     if (!data || data.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No sessions recorded yet.</td></tr>';
