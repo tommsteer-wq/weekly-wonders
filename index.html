@@ -486,8 +486,8 @@
   <div class="header-right">
     <span class="viewer-badge" onclick="showWelcome()" id="viewerBadge" title="Click to change player">👤 —</span>
     <div>
-      <div class="gw-badge" id="gwBadge">GW 32</div>
-      <div class="last-updated" id="lastUpdated">Last updated: 18 Apr 2026</div>
+      <div class="gw-badge" id="gwBadge">GW 33</div>
+      <div class="last-updated" id="lastUpdated">Last updated: 25 Apr 2026</div>
     </div>
     <button class="refresh-btn" onclick="refreshData()">↺ Live Refresh</button>
   </div>
@@ -841,74 +841,74 @@ const PLAYERS = [
   { nick:'DANNY', name:'Danny Nugent',       team:'Take my money FC',       entry:8223006 }
 ];
 
-// GW points per player [GW1...GW31] — net of transfer deductions
+// GW points per player [GW1...GW33] — net of transfer deductions
 const GW_PTS = {
-  STEER:  [49,54,56,70,46,72,75,67,39,86,60,44,65,66,52,96,65,38,38,40,51,42,36,62,68,68,53,67,81,47,56],
-  BEN:    [55,53,52,54,66,69,73,70,52,82,40,50,66,66,49,82,88,37,50,31,50,44,38,53,71,78,42,67,58,62,57],
-  PGSM:   [62,52,54,75,42,56,76,57,79,82,33,31,40,55,56,57,76,45,40,43,51,44,47,54,83,77,44,50,44,42,77],
-  SEAN:   [60,43,60,67,38,55,67,63,46,86,36,34,24,65,43,70,56,58,50,28,54,42,64,50,67,64,47,77,72,65,47],
-  BAZ:    [64,36,70,59,33,53,52,60,40,65,69,78,39,71,54,74,77,45,38,58,45,38,46,37,64,81,51,47,43,51,39],
-  CAT:    [44,69,54,53,42,45,72,44,36,54,36,49,59,60,60,59,48,46,45,54,63,37,46,45,79,74,47,81,82,35,58],
-  ALEX:   [53,38,46,69,41,67,51,65,44,86,47,57,41,74,40,62,71,52,36,71,54,46,30,59,61,59,39,51,48,42,52],
-  ANDREA: [65,44,33,54,39,52,35,49,58,58,40,47,32,60,65,55,64,48,37,54,50,39,56,44,62,78,41,65,80,60,58],
-  ADAM:   [48,52,58,76,33,26,55,72,51,64,36,38,40,77,54,51,58,48,29,49,62,42,39,45,54,79,43,61,66,52,59],
-  BOBBY:  [43,60,31,71,41,36,41,39,63,76,42,29,31,72,42,80,77,67,42,30,63,27,61,67,68,44,34,68,57,57,58],
-  PASS:   [50,53,63,67,35,60,79,53,48,55,35,39,19,78,45,64,86,42,36,40,52,31,47,42,64,67,34,56,72,43,56],
-  JO:     [49,39,48,74,47,27,36,40,40,80,39,32,27,52,79,70,74,49,42,41,42,35,38,83,67,51,48,64,55,64,49],
-  BLEASE: [62,48,34,48,40,35,74,93,40,71,46,33,30,43,42,53,85,49,39,68,79,26,41,69,53,60,28,62,39,34,56],
-  DANNY:  [49,66,49,42,27,40,77,73,73,63,39,26,40,59,44,44,98,41,24,36,55,47,49,62,67,51,32,50,46,49,60]
+  STEER:  [49,54,56,70,46,72,75,67,39,86,60,44,65,66,52,96,65,38,38,40,51,42,36,62,68,68,53,67,81,47,56,58,124],
+  BEN:    [55,53,52,54,66,69,73,70,52,82,40,50,66,66,49,82,88,37,50,31,50,44,38,53,71,78,42,67,58,62,57,63,136],
+  PGSM:   [62,52,54,75,42,56,76,57,79,82,33,31,40,55,56,57,76,45,40,43,51,44,47,54,83,77,44,50,44,42,77,65,114],
+  SEAN:   [60,43,60,67,38,55,67,63,46,86,36,34,24,65,43,70,56,58,50,28,54,42,64,50,67,64,47,77,72,65,47,48,81],
+  BAZ:    [64,36,70,59,33,53,52,60,40,65,69,78,39,71,54,74,77,45,38,58,45,38,46,37,64,81,51,47,43,51,39,47,98],
+  CAT:    [44,69,54,53,42,45,72,44,36,54,36,49,59,60,60,59,48,46,45,54,63,37,46,45,79,74,47,81,82,35,58,70,68],
+  ALEX:   [53,38,46,69,41,67,51,65,44,86,47,57,41,74,40,62,71,52,36,71,54,46,30,59,61,59,39,51,48,42,52,57,71],
+  ANDREA: [65,44,33,54,39,52,35,49,58,58,40,47,32,60,65,55,64,48,37,54,50,39,56,44,62,78,41,65,80,60,58,51,86],
+  ADAM:   [48,52,58,76,33,26,55,72,51,64,36,38,40,77,54,51,58,48,29,49,62,42,39,45,54,79,43,61,66,52,59,57,91],
+  BOBBY:  [43,60,31,71,41,36,41,39,63,76,42,29,31,72,42,80,77,67,42,30,63,27,61,67,68,44,34,68,57,57,58,46,61],
+  PASS:   [50,53,63,67,35,60,79,53,48,55,35,39,19,78,45,64,86,42,36,40,52,31,47,42,64,67,34,56,72,43,56,49,93],
+  JO:     [49,39,48,74,47,27,36,40,40,80,39,32,27,52,79,70,74,49,42,41,42,35,38,83,67,51,48,64,55,64,49,52,80],
+  BLEASE: [62,48,34,48,40,35,74,93,40,71,46,33,30,43,42,53,85,49,39,68,79,26,41,69,53,60,28,62,39,34,56,56,81],
+  DANNY:  [49,66,49,42,27,40,77,73,73,63,39,26,40,59,44,44,98,41,24,36,55,47,49,62,67,51,32,50,46,49,60,31,76]
 };
 
-// FPL standings after GW32 (press Live Refresh to update)
+// FPL standings after GW33 (press Live Refresh to update)
 let STANDINGS = [
-  {rank:1, lastRank:2, name:'Ben Tosh',        nick:'BEN',   team:'TeamTosh',              total:1868,gwPts:63,entry:2762029},
-  {rank:2, lastRank:1, name:'Tom Steer',       nick:'STEER', team:"Steer's Strategy",      total:1867,gwPts:58,entry:1631208},
-  {rank:3, lastRank:3, name:'Philip Green',    nick:'PGSM',  team:'Mr 55p',                total:1789,gwPts:65,entry:251690 },
-  {rank:4, lastRank:4, name:'Richard Catling', nick:'CAT',   team:"Cat'll do nicely",      total:1746,gwPts:70,entry:4295680},
-  {rank:5, lastRank:5, name:'Sean Elliott',    nick:'SEAN',  team:'Better Now',            total:1746,gwPts:48,entry:618820 },
-  {rank:6, lastRank:6, name:'Barry Heath',     nick:'BAZ',   team:'Beefy Boys',            total:1724,gwPts:47,entry:2906530},
-  {rank:7, lastRank:7, name:'Alex Roberts',    nick:'ALEX',  team:"Oh For Cloughs Sake!",  total:1709,gwPts:57,entry:2013858},
-  {rank:8, lastRank:9, name:'Adam Roberts',    nick:'ADAM',  team:'Lee Grant me 3wishes',  total:1674,gwPts:57,entry:2823034},
-  {rank:9, lastRank:8, name:'Andrea Elliott',  nick:'ANDREA',team:'AE United',             total:1673,gwPts:51,entry:5237390},
-  {rank:10,lastRank:10,name:'Bobby Roberts',   nick:'BOBBY', team:'Lord of the Ings FC',   total:1663,gwPts:46,entry:525582 },
-  {rank:11,lastRank:11,name:'Sam Passmore',    nick:'PASS',  team:'No time United',        total:1660,gwPts:49,entry:4227338},
-  {rank:12,lastRank:12,name:'Simon Bleasdale', nick:'BLEASE',team:"Bleasdale's Bandits",   total:1636,gwPts:56,entry:467006 },
-  {rank:13,lastRank:13,name:'Jo Steer',        nick:'JO',    team:'Midnight Owl FC',       total:1633,gwPts:52,entry:9106664},
-  {rank:14,lastRank:14,name:'Danny Nugent',    nick:'DANNY', team:'Take my money FC',      total:1609,gwPts:31,entry:8223006}
+  {rank:1, lastRank:2, name:'Tom Steer',       nick:'STEER', team:"Steer's Strategy",      total:2004,gwPts:124,entry:1631208},
+  {rank:1, lastRank:1, name:'Ben Tosh',        nick:'BEN',   team:'TeamTosh',              total:2004,gwPts:136,entry:2762029},
+  {rank:3, lastRank:3, name:'Philip Green',    nick:'PGSM',  team:'Mr 55p',                total:1912,gwPts:114,entry:251690 },
+  {rank:4, lastRank:6, name:'Barry Heath',     nick:'BAZ',   team:'Beefy Boys',            total:1835,gwPts:98, entry:2906530},
+  {rank:5, lastRank:4, name:'Richard Catling', nick:'CAT',   team:"Cat'll do nicely",      total:1827,gwPts:68, entry:4295680},
+  {rank:5, lastRank:5, name:'Sean Elliott',    nick:'SEAN',  team:'Better Now',            total:1827,gwPts:81, entry:618820 },
+  {rank:7, lastRank:7, name:'Alex Roberts',    nick:'ALEX',  team:"Oh For Cloughs Sake!",  total:1798,gwPts:71, entry:2013858},
+  {rank:8, lastRank:8, name:'Adam Roberts',    nick:'ADAM',  team:'Lee Grant me 3wishes',  total:1765,gwPts:91, entry:2823034},
+  {rank:9, lastRank:9, name:'Andrea Elliott',  nick:'ANDREA',team:'AE United',             total:1759,gwPts:86, entry:5237390},
+  {rank:10,lastRank:11,name:'Sam Passmore',    nick:'PASS',  team:'No time United',        total:1753,gwPts:93, entry:4227338},
+  {rank:11,lastRank:12,name:'Simon Bleasdale', nick:'BLEASE',team:"Bleasdale's Bandits",   total:1743,gwPts:81, entry:467006 },
+  {rank:12,lastRank:10,name:'Bobby Roberts',   nick:'BOBBY', team:'Lord of the Ings FC',   total:1737,gwPts:61, entry:525582 },
+  {rank:13,lastRank:13,name:'Jo Steer',        nick:'JO',    team:'Midnight Owl FC',       total:1713,gwPts:80, entry:9106664},
+  {rank:14,lastRank:14,name:'Danny Nugent',    nick:'DANNY', team:'Take my money FC',      total:1681,gwPts:76, entry:8223006}
 ];
 
-// Money data (from Google Sheet - Money tab)
+// Money data — winnings (£13 for 1st, £7 for 2nd) | losses = times finishing bottom
 const MONEY = {
-  STEER:  { winnings:67,    losses:0 },
-  SEAN:   { winnings:57,    losses:1 },
-  DANNY:  { winnings:54,    losses:6 },
-  BAZ:    { winnings:53,    losses:2 },
-  CAT:    { winnings:49.5,  losses:3 },
-  BLEASE: { winnings:47,    losses:6 },
-  ALEX:   { winnings:47,    losses:3 },
-  PGSM:   { winnings:46,    losses:2 },
-  BEN:    { winnings:44,    losses:1 },
-  JO:     { winnings:40,    losses:1 },
-  PASS:   { winnings:33,    losses:1 },
-  BOBBY:  { winnings:23.5,  losses:3 },
-  ADAM:   { winnings:20,    losses:1 },
-  ANDREA: { winnings:20,    losses:2 }
+  STEER:  { winnings:74,   losses:0 },  // 67 + 7 (GW33 2nd)
+  CAT:    { winnings:62.5, losses:3 },  // 49.5 + 13 (GW32 1st)
+  SEAN:   { winnings:57,   losses:1 },
+  BEN:    { winnings:57,   losses:1 },  // 44 + 13 (GW33 1st)
+  DANNY:  { winnings:54,   losses:7 },  // last in GW32
+  BAZ:    { winnings:53,   losses:2 },
+  PGSM:   { winnings:53,   losses:2 },  // 46 + 7 (GW32 2nd) — GW32 Danny was last so Phil stays at 2
+  BLEASE: { winnings:47,   losses:6 },
+  ALEX:   { winnings:47,   losses:3 },
+  JO:     { winnings:40,   losses:1 },
+  PASS:   { winnings:33,   losses:1 },
+  BOBBY:  { winnings:23.5, losses:4 },  // last in GW33
+  ADAM:   { winnings:20,   losses:1 },
+  ANDREA: { winnings:20,   losses:2 }
 };
 
 // Chips — wc1/bb1/tc1/fh1 = standard chips | wc2/bb2/tc2/fh2 = extra chips (given by FPL this season)
 // null = not yet used. Values = GW number when played.
 const CHIPS = {
-  STEER:  { wc1:16, bb1:11, tc1:6,  fh1:13, wc2:32,   bb2:null, tc2:null, fh2:null },
-  BEN:    { wc1:6,  bb1:5,  tc1:17, fh1:13, wc2:32,   bb2:null, tc2:26,   fh2:null },
-  PGSM:   { wc1:3,  bb1:19, tc1:13, fh1:4,  wc2:22,   bb2:null, tc2:null, fh2:31   },
-  SEAN:   { wc1:4,  bb1:19, tc1:18, fh1:null,wc2:25,  bb2:null, tc2:26,   fh2:null },
-  BAZ:    { wc1:10, bb1:16, tc1:18, fh1:19, wc2:null, bb2:27,   tc2:null, fh2:null },
-  CAT:    { wc1:19, bb1:null,tc1:18,fh1:null,wc2:null, bb2:null, tc2:null, fh2:31   },
-  ALEX:   { wc1:8,  bb1:13, tc1:6,  fh1:18, wc2:32,   bb2:null, tc2:null, fh2:null },
-  ANDREA: { wc1:null,bb1:15,tc1:18, fh1:null,wc2:null, bb2:null, tc2:null, fh2:26   },
-  ADAM:   { wc1:8,  bb1:18, tc1:17, fh1:19, wc2:25,   bb2:null, tc2:null, fh2:31   },
+  STEER:  { wc1:16, bb1:11, tc1:6,  fh1:13, wc2:32,   bb2:33,   tc2:null, fh2:null },
+  BEN:    { wc1:6,  bb1:5,  tc1:17, fh1:13, wc2:32,   bb2:33,   tc2:26,   fh2:null },
+  PGSM:   { wc1:3,  bb1:19, tc1:13, fh1:4,  wc2:22,   bb2:null, tc2:33,   fh2:31   },
+  SEAN:   { wc1:4,  bb1:19, tc1:18, fh1:null,wc2:25,  bb2:null, tc2:26,   fh2:33   },
+  BAZ:    { wc1:10, bb1:16, tc1:18, fh1:19, wc2:null, bb2:27,   tc2:null, fh2:33   },
+  CAT:    { wc1:19, bb1:null,tc1:18,fh1:null,wc2:null, bb2:null, tc2:33,   fh2:31   },
+  ALEX:   { wc1:8,  bb1:13, tc1:6,  fh1:18, wc2:32,   bb2:33,   tc2:null, fh2:null },
+  ANDREA: { wc1:null,bb1:15,tc1:18, fh1:null,wc2:null, bb2:null, tc2:33,   fh2:26   },
+  ADAM:   { wc1:8,  bb1:18, tc1:17, fh1:19, wc2:25,   bb2:null, tc2:33,   fh2:31   },
   BOBBY:  { wc1:11, bb1:null,tc1:13,fh1:14, wc2:31,   bb2:null, tc2:null, fh2:null },
-  PASS:   { wc1:6,  bb1:12, tc1:19, fh1:null,wc2:null, bb2:null, tc2:null, fh2:null },
+  PASS:   { wc1:6,  bb1:12, tc1:19, fh1:null,wc2:null, bb2:33,   tc2:null, fh2:null },
   JO:     { wc1:9,  bb1:4,  tc1:17, fh1:18, wc2:32,   bb2:null, tc2:null, fh2:null },
   BLEASE: { wc1:19, bb1:null,tc1:18,fh1:null,wc2:32,  bb2:null, tc2:null, fh2:null },
   DANNY:  { wc1:5,  bb1:null,tc1:18,fh1:19, wc2:null, bb2:null, tc2:null, fh2:31   }
@@ -923,6 +923,10 @@ const NEEDY = [
 
 // Weekly Reports (editable — add new weeks here!)
 const REPORTS = [
+  { gw:33, winner:'Ben Tosh', winnerPts:136, runnerUp:'Tom Steer', runnerUpPts:124,
+    loser:'Bobby Roberts', loserPts:61, avg:89.2, chips:'BB — Tosh, Steer, Sam & Alex | TC — Phil, Adam, Andrea & Cat | FH — Baz & Sean',
+    mention:'Massive chip week! Tosh tops with 136 on his Bench Boost. Steer & Tosh now level on 2004 pts at the top.',
+    fact:'10 out of 14 players used a chip this week — the most in a single gameweek all season.' },
   { gw:32, winner:'Richard Catling', winnerPts:70, runnerUp:'Philip Green', runnerUpPts:65,
     loser:'Danny Nugent', loserPts:31, avg:55.4, chips:'Wildcard — Steer, Tosh, Alex, Simon & Jo',
     mention:'CAT wins his second GW in a row with 70 pts. Tosh sneaks ahead of Steer at the top by just 1 point!',
