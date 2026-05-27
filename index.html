@@ -502,6 +502,7 @@
   <div class="tab" onclick="showTab('extras',this)">⭐ Extras</div>
   <div class="tab" onclick="showTab('prizes',this)">🏅 Prize Structure</div>
   <div class="tab active" onclick="showTab('endofseason',this)" style="background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(0,255,135,0.08));border-bottom:2px solid var(--gold);">🏆 End of Season</div>
+  <div class="tab" onclick="showTab('nextseason',this)" style="background:linear-gradient(135deg,rgba(64,169,255,0.08),rgba(0,196,180,0.08));border-bottom:2px solid var(--blue);">🔄 26/27 Season</div>
   <div class="tab" id="adminTab" onclick="showTab('admin',this)" style="display:none;">🔐 Admin</div>
 </div>
 
@@ -878,6 +879,45 @@
           <div style="font-size:22px;font-weight:800;color:var(--teal);margin:6px 0 2px;">0 losses</div>
           <div style="font-size:13px;font-weight:600;">Tom Steer</div>
           <div style="font-size:11px;color:var(--muted);">Never finished bottom all season</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─────── 26/27 SEASON TAB ─────── -->
+  <div class="section" id="tab-nextseason">
+
+    <div style="background:linear-gradient(135deg,#0a1628,#1a2535,#0a1628);border:2px solid var(--blue);border-radius:16px;padding:28px;text-align:center;margin-bottom:28px;">
+      <div style="font-size:40px;margin-bottom:10px;">🔄</div>
+      <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-bottom:8px;">What Happens Next</div>
+      <div style="font-size:26px;font-weight:900;color:var(--text);margin-bottom:6px;">2026/27 Season Entry</div>
+      <div style="font-size:14px;color:var(--muted);">Your 25/26 winnings offset your £76 entry fee. Positive balance = money back. Negative = you owe.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">💳</span> 25/26 Winnings vs 26/27 Entry Fee</div>
+      <div class="table-wrap">
+        <table id="nextSeasonTable">
+          <thead>
+            <tr>
+              <th>Manager</th>
+              <th>25/26 Winnings</th>
+              <th>26/27 Entry</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="nextSeasonTbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">💚 Money Back</div>
+          <div id="nextInCredit" style="font-size:15px;font-weight:700;color:var(--accent);">—</div>
+        </div>
+        <div style="background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🔴 Still Owe</div>
+          <div id="nextInDebt" style="font-size:15px;font-weight:700;color:var(--red);">—</div>
         </div>
       </div>
     </div>
@@ -1717,6 +1757,43 @@ function renderEndOfSeason() {
   }
 }
 
+// ═══════════════════ 26/27 SEASON TAB ═══════════════════
+
+function renderNextSeason() {
+  const ENTRY_FEE = 76;
+  // Sort by balance descending (biggest winners first)
+  const sorted = PLAYERS.map(p => {
+    const winnings = MONEY[p.nick]?.winnings || 0;
+    const balance = winnings - ENTRY_FEE;
+    return { p, winnings, balance };
+  }).sort((a, b) => b.balance - a.balance);
+
+  const tbody = document.getElementById('nextSeasonTbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = sorted.map(({ p, winnings, balance }) => {
+    const isMe = CURRENT_USER && p.nick === CURRENT_USER;
+    const positive = balance >= 0;
+    const balanceStr = positive ? `+£${balance.toFixed(2)}` : `−£${Math.abs(balance).toFixed(2)}`;
+    const balanceColor = positive ? 'var(--accent)' : 'var(--red)';
+    const rowBg = positive ? 'background:rgba(0,230,118,0.03);' : 'background:rgba(255,71,87,0.03);';
+    return `<tr class="${isMe ? 'current-user-row' : ''}" style="${rowBg}">
+      <td><div class="player-name">${p.name}</div><div class="team-name">${p.team}</div></td>
+      <td class="money">£${winnings.toFixed(2)}</td>
+      <td style="color:var(--muted);font-weight:600;">£${ENTRY_FEE.toFixed(2)}</td>
+      <td style="font-size:17px;font-weight:800;color:${balanceColor};">${balanceStr}</td>
+    </tr>`;
+  }).join('');
+
+  // Summary
+  const inCredit = sorted.filter(x => x.balance >= 0);
+  const inDebt   = sorted.filter(x => x.balance < 0);
+  const creditEl = document.getElementById('nextInCredit');
+  const debtEl   = document.getElementById('nextInDebt');
+  if (creditEl) creditEl.textContent = `${inCredit.length} player${inCredit.length !== 1 ? 's' : ''} — total +£${inCredit.reduce((s,x)=>s+x.balance,0).toFixed(2)}`;
+  if (debtEl)   debtEl.textContent   = `${inDebt.length} player${inDebt.length !== 1 ? 's' : ''} — total −£${Math.abs(inDebt.reduce((s,x)=>s+x.balance,0)).toFixed(2)}`;
+}
+
 // ═══════════════════ WELCOME SCREEN ═══════════════════
 
 function buildWelcomeGrid() {
@@ -1824,6 +1901,7 @@ function init() {
   renderHighest();
   renderConsistency();
   renderEndOfSeason();
+  renderNextSeason();
 }
 
 document.addEventListener('DOMContentLoaded', init);
