@@ -40,8 +40,39 @@ export function renderAdminLocked(error) {
 }
 
 /* ── the panel ────────────────────────────────────────────────── */
+const seasonSwitch = (season, counts) => `
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+    <div class="season-switch" id="adminSeasons">
+      <button data-season="2026-27" aria-selected="${season === '2026-27'}">26/27 <span class="tab-badge">${counts['2026-27']}</span></button>
+      <button data-season="2025-26" aria-selected="${season === '2025-26'}">25/26 <span class="tab-badge">${counts['2025-26']}</span></button>
+      <button data-season="all"     aria-selected="${season === 'all'}">All time</button>
+    </div>
+    <span class="dim" style="font-size:11.5px">Nothing is deleted — the sheet keeps every session. This only chooses which to show.</span>
+  </div>`;
+
 export function renderAdmin(data, roster) {
-  const { totals, people, recent, activity, secured } = data;
+  const { totals, people, recent, activity, season, counts } = data;
+
+  // A season with no sessions yet — the usual state at the start
+  if (!people.length) {
+    return `
+      ${seasonSwitch(season, counts)}
+      <div class="card"><div class="card-body">
+        <div class="empty">
+          <div class="mark">○</div>
+          <h3>No sessions logged for ${season === 'all' ? 'any season' : esc(season.replace('-', '/'))} yet</h3>
+          <p>Tracking starts from the moment the 4th Edition went live. As soon as someone
+             opens the dashboard and picks their name, they will appear here.</p>
+        </div>
+      </div></div>
+      ${counts['2025-26'] ? `
+      <div class="card">
+        <div class="card-body" style="display:flex;gap:12px;align-items:center;font-size:13px">
+          <span class="pill brass">Archive</span>
+          <span>${counts['2025-26']} sessions from the 3rd Edition are still here — switch to <strong>25/26</strong> above.</span>
+        </div>
+      </div>` : ''}`;
+  }
 
   // Anyone on this season's roster who has never logged in
   const seen = new Set(people.map(p => p.nick));
@@ -87,20 +118,13 @@ export function renderAdmin(data, roster) {
     </div>`).join('');
 
   return `
-    ${secured ? '' : `
-    <div class="card" style="margin-bottom:16px;border-color:rgba(201,162,39,.4)">
-      <div class="card-body" style="display:flex;gap:12px;align-items:flex-start;font-size:13px">
-        <span class="pill brass">Note</span>
-        <div>The PIN and the sheet URL are still the fallbacks committed to the public repo, so this panel
-        is tidy rather than private. Set <code>ADMIN_PIN</code> and <code>TRACKING_URL</code> in
-        Vercel → Settings → Environment Variables and this notice disappears.</div>
-      </div>
-    </div>`}
+    ${seasonSwitch(season, counts)}
 
     <div class="grid grid-4" style="margin-bottom:16px">
       <div class="stat accent"><div class="stat-label">Total sessions</div>
         <div class="stat-value">${fmt(totals.sessions)}</div>
-        <div class="stat-meta">since the 3rd Edition launched</div></div>
+        <div class="stat-meta">${season === 'all' ? 'across both seasons'
+          : season === '2026-27' ? 'this season' : 'the 3rd Edition'}</div></div>
       <div class="stat"><div class="stat-label">This week</div>
         <div class="stat-value">${fmt(totals.sessionsThisWeek)}</div>
         <div class="stat-meta">visits in the last 7 days</div></div>
@@ -121,7 +145,8 @@ export function renderAdmin(data, roster) {
     </div>` : ''}
 
     <div class="card">
-      <div class="card-head"><h2>Who's been on</h2><span class="sub">All time</span></div>
+      <div class="card-head"><h2>Who's been on</h2><span class="sub">${
+        season === 'all' ? 'All time' : season === '2026-27' ? '2026/27' : '2025/26'}</span></div>
       <div class="card-body flush"><div class="table-wrap"><table>
         <thead><tr>
           <th>#</th><th>Person</th><th class="right">Visits</th><th></th>
@@ -132,7 +157,7 @@ export function renderAdmin(data, roster) {
       </table></div></div>
     </div>
 
-    ${missing.length ? `
+    ${missing.length && season !== '2025-26' ? `
     <div class="card">
       <div class="card-head"><h2>Never logged in</h2><span class="sub">On the 26/27 roster, yet to appear</span></div>
       <div class="card-body">

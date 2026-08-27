@@ -30,7 +30,7 @@ const S = {
   fetchedAt: null,
   error: null,
   loading: true,
-  admin: { unlocked: false, data: null, error: null, loading: false }
+  admin: { unlocked: false, data: null, error: null, loading: false, season: '2026-27' }
 };
 
 /* ── tab definitions per season ──────────────────────────────── */
@@ -177,7 +177,8 @@ function paintHeader() {
   const upd = $('#updated');
   if (upd) upd.textContent = S.fetchedAt ? `Updated ${ago(S.fetchedAt)}` : '';
 
-  $$('.season-switch button').forEach(b =>
+  // scoped to the header — the admin panel has its own season switch
+  $$('.header .season-switch button').forEach(b =>
     b.setAttribute('aria-selected', String(b.dataset.season === S.season)));
 
   const chip = $('#viewerChip');
@@ -274,13 +275,14 @@ const captainsLoadingState = () => `
   </div></div>`;
 
 /* ─────────────────────────── ADMIN ──────────────────────────── */
-async function unlockAdmin(pin) {
+async function unlockAdmin(pin, season = S.admin.season) {
   S.admin.loading = true; S.admin.error = null; paintBody();
   try {
-    const res = await fetch(`/api/sessions?pin=${encodeURIComponent(pin)}`);
+    const res = await fetch(`/api/sessions?pin=${encodeURIComponent(pin)}&season=${encodeURIComponent(season)}`);
     const body = await res.json();
     if (!body.ok) throw new Error(body.error || 'Could not load sessions');
     S.admin.data = body;
+    S.admin.season = body.season;
     S.admin.unlocked = true;
     sessionStorage.setItem('ww4:adminPin', pin);   // this tab only
   } catch (err) {
@@ -360,6 +362,13 @@ document.addEventListener('click', e => {
   if (e.target.closest('#pinSubmit')) {
     const v = $('#pinInput')?.value?.trim();
     if (v) unlockAdmin(v);
+    return;
+  }
+
+  const adminSeason = e.target.closest('#adminSeasons button');
+  if (adminSeason) {
+    const pin = sessionStorage.getItem('ww4:adminPin');
+    if (pin) unlockAdmin(pin, adminSeason.dataset.season);
     return;
   }
 

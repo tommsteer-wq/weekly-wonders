@@ -77,21 +77,34 @@ forwards to the Google Apps Script behind the sheet. The browser
 never sees that URL. Tracking failures are swallowed — they must
 never break the dashboard. "Just looking" is not recorded.
 
-### Making it actually private
+### Season toggle
 
-The PIN and sheet URL currently fall back to values committed in
-this **public** repo, so the gate is tidy rather than secret. To fix
-it properly (about two minutes):
+The panel has its own **26/27 · 25/26 · All time** switch. 26/27
+starts from a clean slate; the 110 sessions from the 3rd Edition
+are still there under 25/26.
 
-Vercel → weekly-wonders → Settings → Environment Variables, add:
+**Nothing is ever deleted** — the Apps Script only supports read,
+start and update, so there is no delete path even if we wanted one.
+The sheet keeps every session it has ever been sent. The two
+constants at the top of `api/sessions.js` only decide which bucket
+a session is shown in:
 
-| Name | Value |
-|---|---|
-| `ADMIN_PIN` | a new PIN of your choosing |
-| `TRACKING_URL` | the Apps Script `/exec` URL |
+- `THIRD_EDITION_END` — when the 4th Edition replaced the 3rd
+- `SEASON_START_2627` — when 26/27 starts counting
 
-Redeploy. The warning banner at the top of the admin panel
-disappears once both are set.
+Sessions between the two were the evening it was built and tested,
+and are shown in neither. To re-zero the counter later, move
+`SEASON_START_2627` forward. To genuinely erase rows, open the
+Google Sheet and delete them by hand.
+
+### On the PIN
+
+The PIN is `39373` and it is not a secret — it is in this repo, and
+five digits would not survive a determined guess. That is a
+deliberate choice: the only thing behind it is a list of who opened
+a fantasy football dashboard. If that ever stops being fine, set
+`ADMIN_PIN` and `TRACKING_URL` as environment variables in Vercel
+and they stop being public.
 
 ## Layout
 
