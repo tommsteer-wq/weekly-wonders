@@ -3,9 +3,12 @@
   "private": true,
   "version": "4.0.0",
   "type": "module",
-  "description": "Weekly Wonders — 4th Edition FPL dashboard",
+  "description": "Weekly Wonders \u2014 4th Edition FPL dashboard",
   "scripts": {
-    "dev": "node _dev.mjs"
+    "dev": "node _dev.mjs",
+    "og": "npm install --no-save @resvg/resvg-js && node tools/make-og-image.mjs"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

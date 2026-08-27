@@ -109,6 +109,22 @@ a fantasy football dashboard. If that ever stops being fine, set
 `ADMIN_PIN` and `TRACKING_URL` as environment variables in Vercel
 and they stop being public.
 
+## The link preview card
+
+`assets/og.png` is what shows when the link is pasted into WhatsApp,
+iMessage or Slack. It is generated, not hand-drawn:
+
+```bash
+npm run og
+```
+
+That rasterises the card in `tools/make-og-image.mjs` to a 1200x630
+PNG. Edit the script, re-run it, commit the PNG. It has to be a PNG —
+none of those apps will render an SVG og:image.
+
+The rasteriser is installed on demand with `--no-save`, so it is not
+a permanent dependency of the project.
+
 ## Layout
 
 ```
@@ -130,6 +146,8 @@ js/track.js           session tracking (client)
 js/render-archive.js  2025/26 tab renderers
 js/data-2526.js       frozen 25/26 season — do not edit
 js/app.js             state, navigation, auto-refresh
+assets/og.png         generated link-preview card
+tools/make-og-image.mjs   builds it (npm run og)
 archive/              the original single-file 3rd Edition dashboard
 ```
 
