@@ -49,10 +49,13 @@ export function renderLive(s) {
       <tr class="${rowClass(i, ready.length, m.nick === s.me)}">
         <td class="rank">${m.liveRank}</td>
         <td>${mgrCell(m.display, m.team)}</td>
-        <td class="right"><span class="total">${fmt(m.livePts)}</span>${m.hit ? `<span class="dim" style="font-size:11px"> (−${m.hit})</span>` : ''}</td>
+        <td class="right"><span class="total">${fmt(m.livePts)}</span></td>
         <td>
           <div class="meter" style="min-width:70px"><span style="width:${pct(m.livePts, top)}%"></span></div>
         </td>
+        <td class="center">${m.hit
+          ? `<span class="pill neg" title="${m.hit / 4} extra transfer${m.hit === 4 ? '' : 's'} — ${m.hit} points already taken off the score on the left">−${m.hit}</span>`
+          : '<span class="dim">—</span>'}</td>
         <td class="center">${m.captain
           ? `<span class="${m.captain.played ? '' : 'dim'}">${esc(m.captain.web)}</span>
              <span class="pill ${m.captain.scored >= 12 ? 'pos' : m.captain.scored <= 4 ? 'neg' : ''}">${m.captain.scored}</span>`
@@ -105,14 +108,16 @@ export function renderLive(s) {
         <h2>Gameweek ${live.gw} — live table</h2>
         <div style="display:flex;align-items:center;gap:10px">
           ${statusPill}
-          <span class="sub">${esc(live.note)}</span>
+          <span class="sub">Scores are net of transfer hits. ${esc(live.note)}</span>
         </div>
       </div>
       <div class="card-body flush">
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>#</th><th>Manager</th><th class="right">Live</th><th></th>
+              <th>#</th><th>Manager</th>
+              <th class="right" title="Already net of any transfer hit">Live</th><th></th>
+              <th class="center" title="Points sacrificed on extra transfers, already deducted">Hit</th>
               <th class="center">Captain</th><th class="center">Chip</th>
               <th class="center">Progress</th><th class="right">This week</th>
             </tr></thead>

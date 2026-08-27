@@ -54,7 +54,10 @@ Current rules — see `js/config.js` to change any of them:
 - **Bottom of the week takes a loss**; if several tie on the bottom
   score they all take one
 - Season: £100 / £75 / £50 / £30 · Cup £20 / £10 · Highest GW £19
-- Scores are **net of transfer hits**
+- Scores are **net of transfer hits**. An extra transfer costs 4
+  points, and that comes off *before* the week is judged — so the
+  biggest raw score does not always win the £14. The Live tab has a
+  **Hit** column showing −4 / −8 in red for anyone who paid one.
 
 It balances exactly: 15 × £76 = **£1,140** in, £1,140 out.
 
