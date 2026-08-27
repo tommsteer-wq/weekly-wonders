@@ -4,21 +4,27 @@
 // ══════════════════════════════════════════════════════════════
 
 export const LEAGUE = {
-  id: null,                       // ← FPL numeric league id for 26/27. Set this.
+  id: 384071,
   inviteCode: 'd16bqa',
   season: '2026/27',
   edition: '4th Edition',
-  entryFee: 76
+  entryFee: 76,
+  players: 15
 };
 
 // ── Prize structure ───────────────────────────────────────────
 // Weekly money is computed from these rules, never hand-typed.
+//
+// Balances exactly: 15 x £76 = £1,140 in.
+//   38 weeks x £22 = £836  +  season £255  +  cup £30  +  high £19
+//                          = £1,140 out.
 export const PRIZES = {
   weekly: {
-    first:  13,
-    second: 7,
-    // Ties share the pot for that position evenly.
-    // e.g. two managers tied on top share (13 + 7) / 2 = £10 each.
+    first:  14,
+    second: 8,
+    // A tie for top merges both pots and splits them between the
+    // tied managers — nobody takes a runner-up prize that week.
+    // Keeps every week's payout at exactly £22.
     shareTiedPositions: true
   },
   season: {
@@ -51,28 +57,29 @@ export const CHIP_LABELS = {
   manager:   { short: 'MG', name: 'Assistant Manager' }
 };
 
-// ── Roster overrides ──────────────────────────────────────────
-// The dashboard reads the real roster from the FPL API, so you
-// normally do not touch this. Use it only to pin a short display
-// name (the "nick") to a manager, or to note who has left.
-export const NICKNAMES = {
-  // 'FPL manager name': 'NICK'
-  'Tom Steer':        'STEER',
-  'Ben Tosh':         'BEN',
-  'Philip Green':     'PGSM',
-  'Sean Elliott':     'SEAN',
-  'Barry Heath':      'BAZ',
-  'Richard Catling':  'CAT',
-  'Alexander Roberts':'ALEX',
-  'Alex Roberts':     'ALEX',
-  'Andrea Elliott':   'ANDREA',
-  'Adam Roberts':     'ADAM',
-  'Bobby Roberts':    'BOBBY',
-  'Sam Passmore':     'PASS',
-  'Simon Bleasdale':  'BLEASE',
-  'Danny Nugent':     'DANNY',
-  'Charlie Passmore': 'CHARLIE',
-  'Rudy Nugent':      'RUDY'
+// ── Roster ────────────────────────────────────────────────────
+// Keyed by FPL entry id, NOT by name: Rudy plays under his dad's
+// account, so two entries in this league are both called
+// "Danny Nugent" and matching on name would swap their seasons.
+//
+// Entry ids are reissued by FPL every season — these are 26/27.
+export const ROSTER = {
+  2002141: { nick: 'STEER',   display: 'Tom Steer'         },
+  5401784: { nick: 'BEN',     display: 'Ben Tosh'          },
+  1988195: { nick: 'PGSM',    display: 'Philip Green'      },
+  1214111: { nick: 'SEAN',    display: 'Sean Elliott'      },
+  2401345: { nick: 'BAZ',     display: 'Barry Heath'       },
+  4796726: { nick: 'CAT',     display: 'Richard Catling'   },
+  6570197: { nick: 'ALEX',    display: 'Alex Roberts'      },
+  5985503: { nick: 'ANDREA',  display: 'Andrea Elliott'    },
+  6383904: { nick: 'ADAM',    display: 'Adam Roberts'      },
+  1537481: { nick: 'BOBBY',   display: 'Bobby Roberts'     },
+  7897510: { nick: 'PASS',    display: 'Sam Passmore'      },
+  2836080: { nick: 'BLEASE',  display: 'Simon Bleasdale'   },
+  6431272: { nick: 'DANNY',   display: 'Danny Nugent'      },  // "Cunha dig it"
+  6572889: { nick: 'RUDY',    display: 'Rudy Nugent',
+             note: "plays under Danny's account"           },  // "The minion boys"
+  8556697: { nick: 'CHARLIE', display: 'Charlie Passmore'  }
 };
 
 // Managers who played a previous season but are not in 26/27.

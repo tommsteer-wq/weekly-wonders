@@ -131,7 +131,9 @@ export default async function handler(req, res) {
         count: 0, by: []
       };
       capCount[k].count++;
-      capCount[k].by.push(m.name);
+      // entry ids, not names — two managers in this league share a
+      // name (one plays under the other's account)
+      capCount[k].by.push(m.entry);
     }
     const captainBoard = Object.values(capCount).sort((a, b) => b.count - a.count || b.raw - a.raw);
 

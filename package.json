@@ -1,0 +1,11 @@
+{
+  "name": "weekly-wonders",
+  "private": true,
+  "version": "4.0.0",
+  "type": "module",
+  "description": "Weekly Wonders — 4th Edition FPL dashboard",
+  "scripts": {
+    "dev": "node _dev.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

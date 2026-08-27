@@ -51,6 +51,10 @@ export function gameweekState(events) {
   const next    = events.find(e => e.is_next) || null;
   const finished = events.filter(e => e.finished).map(e => e.id);
 
+  // data_checked means bonus is applied and the score will not move
+  // again. Money is only settled off checked gameweeks.
+  const checked = events.filter(e => e.data_checked).map(e => e.id);
+
   // "Live" = current GW has kicked off but isn't bonus-checked yet.
   const isLive = !!current && !current.data_checked;
 
@@ -60,6 +64,8 @@ export function gameweekState(events) {
     isLive,
     finishedGWs: finished,
     lastFinishedGW: finished.length ? Math.max(...finished) : 0,
+    checkedGWs: checked,
+    lastCheckedGW: checked.length ? Math.max(...checked) : 0,
     nextDeadline: next?.deadline_time ?? null,
     currentAverage: current?.average_entry_score ?? null,
     currentHighest: current?.highest_score ?? null

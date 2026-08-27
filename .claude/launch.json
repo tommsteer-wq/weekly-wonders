@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "weekly-wonders",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["_dev.mjs"],
+      "port": 5174
+    }
+  ]
+}
