@@ -3,7 +3,7 @@
 //  Boot, state, navigation, auto-refresh.
 // ══════════════════════════════════════════════════════════════
 
-import { LEAGUE, ROSTER, REFRESH, ADMIN } from './config.js';
+import { LEAGUE, ROSTER, REFRESH } from './config.js';
 import { fetchSeason, fetchLive, fetchCaptainHistory, lastSeason, lastLive, viewer, ago } from './api.js';
 import { settleSeason } from './money.js';
 import { $, $$, esc, html, initials, empty } from './ui.js';
@@ -12,6 +12,8 @@ import {
   renderArchiveTable, renderArchiveMoney, renderArchiveReports,
   renderArchiveChips, renderArchiveExtras, ARCHIVE_PLAYERS
 } from './render-archive.js';
+import { renderAdmin, renderAdminLocked } from './render-admin.js';
+import { startSession, endSession } from './track.js';
 
 /* ─────────────────────────── STATE ──────────────────────────── */
 const S = {
@@ -27,7 +29,8 @@ const S = {
   ledger: {},
   fetchedAt: null,
   error: null,
-  loading: true
+  loading: true,
+  admin: { unlocked: false, data: null, error: null, loading: false }
 };
 
 /* ── tab definitions per season ──────────────────────────────── */
@@ -189,13 +192,18 @@ function paintHeader() {
 function paintTabs() {
   const bar = $('#tabbar');
   const tabs = tabsFor();
-  if (!tabs.some(t => t.id === S.tab)) S.tab = tabs[0].id;
+  // 'admin' is a real tab but deliberately not in either season's
+  // list, so exempt it from the "unknown tab" reset.
+  if (S.tab !== 'admin' && !tabs.some(t => t.id === S.tab)) S.tab = tabs[0].id;
 
   html(bar, tabs.map(t => `
     <button data-tab="${t.id}" aria-selected="${t.id === S.tab}">
       ${esc(t.label)}${t.badge ? `<span class="tab-badge">${esc(t.badge)}</span>` : ''}
     </button>`).join('') +
-    (S.me === 'STEER' ? `<button data-tab="admin" aria-selected="${S.tab === 'admin'}">Admin</button>` : ''));
+    // Visible to Tom, or to anyone who knows to add #admin to the URL.
+    // Either way the panel itself is PIN-gated on the server.
+    ((S.me === 'STEER' || S.adminRequested)
+      ? `<button data-tab="admin" aria-selected="${S.tab === 'admin'}">Admin</button>` : ''));
 }
 
 function paintBody() {
@@ -228,7 +236,13 @@ function paintBody() {
       case 'a-chips':   body = renderArchiveChips(S.me); break;
       case 'a-extras':  body = renderArchiveExtras(S.me); break;
 
-      case 'admin':     body = renderAdmin(); break;
+      case 'admin':
+        body = S.admin.loading
+          ? '<div class="card"><div class="card-body"><div class="skel" style="height:120px"></div></div></div>'
+          : S.admin.unlocked && S.admin.data
+            ? renderAdmin(S.admin.data, S.managers)
+            : renderAdminLocked(S.admin.error);
+        break;
       default:          body = empty('Nothing here', 'Pick a tab above.');
     }
   } catch (err) {
@@ -259,25 +273,27 @@ const captainsLoadingState = () => `
     </div>
   </div></div>`;
 
-function renderAdmin() {
-  return `
-    <div class="card">
-      <div class="card-head"><h2>Admin</h2><span class="sub">League ${LEAGUE.id}</span></div>
-      <div class="card-body">
-        <div class="grid grid-3">
-          <div class="stat"><div class="stat-label">League ID</div><div class="stat-value" style="font-size:20px">${LEAGUE.id}</div>
-            <div class="stat-meta">invite code ${esc(LEAGUE.inviteCode)}</div></div>
-          <div class="stat"><div class="stat-label">Managers</div><div class="stat-value">${S.managers.length}</div>
-            <div class="stat-meta">expected ${LEAGUE.players}</div></div>
-          <div class="stat"><div class="stat-label">Data age</div><div class="stat-value" style="font-size:20px">${ago(S.fetchedAt)}</div>
-            <div class="stat-meta">edge-cached response</div></div>
-        </div>
-        <p class="dim" style="margin-top:16px;font-size:12.5px">
-          Session tracking is not wired into this build yet. Say the word and I will add it back,
-          ideally on something sturdier than a Google Apps Script with the PIN in the page source.
-        </p>
-      </div>
-    </div>`;
+/* ─────────────────────────── ADMIN ──────────────────────────── */
+async function unlockAdmin(pin) {
+  S.admin.loading = true; S.admin.error = null; paintBody();
+  try {
+    const res = await fetch(`/api/sessions?pin=${encodeURIComponent(pin)}`);
+    const body = await res.json();
+    if (!body.ok) throw new Error(body.error || 'Could not load sessions');
+    S.admin.data = body;
+    S.admin.unlocked = true;
+    sessionStorage.setItem('ww4:adminPin', pin);   // this tab only
+  } catch (err) {
+    S.admin.error = err.message;
+    S.admin.unlocked = false;
+  }
+  S.admin.loading = false;
+  paintBody();
+}
+
+function tryStoredAdminPin() {
+  const pin = sessionStorage.getItem('ww4:adminPin');
+  if (pin && !S.admin.unlocked && !S.admin.loading) unlockAdmin(pin);
 }
 
 /* ────────────────────────── WELCOME ─────────────────────────── */
@@ -300,6 +316,7 @@ function pickViewer(nick) {
   S.me = nick || null;
   if (nick) viewer.set(nick); else viewer.clear();
   $('#welcome').classList.add('hidden');
+  if (nick) startSession(nick); else endSession();
   paint();
 }
 
@@ -334,7 +351,15 @@ document.addEventListener('click', e => {
     S.tab = tabBtn.dataset.tab;
     paintTabs(); paintBody();
     if (S.tab === 'captains' && !S.captains) loadCaptains();
+    if (S.tab === 'admin') tryStoredAdminPin();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  // admin PIN gate
+  if (e.target.closest('#pinSubmit')) {
+    const v = $('#pinInput')?.value?.trim();
+    if (v) unlockAdmin(v);
     return;
   }
 
@@ -361,12 +386,23 @@ document.addEventListener('click', e => {
   }
 });
 
+// Enter submits the PIN
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'pinInput') {
+    const v = e.target.value.trim();
+    if (v) unlockAdmin(v);
+  }
+});
+
 /* ──────────────────────────── BOOT ──────────────────────────── */
 async function boot() {
   $('#year').textContent = new Date().getFullYear();
+  S.adminRequested = location.hash === '#admin';
+  if (S.adminRequested) S.tab = 'admin';
   paintHeader();
   await load();
-  if (!S.me) showWelcome();
+  if (!S.me) showWelcome(); else startSession(S.me);
+  if (S.tab === 'admin') tryStoredAdminPin();
   scheduleRefresh();
 }
 

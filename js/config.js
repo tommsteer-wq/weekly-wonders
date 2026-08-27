@@ -86,13 +86,9 @@ export const ROSTER = {
 export const DEPARTED = ['JO'];
 
 // ── Admin ─────────────────────────────────────────────────────
-export const ADMIN = {
-  // Session tracking backend (Google Apps Script from last season).
-  trackingUrl: 'https://script.google.com/macros/s/AKfycbyQG7rbVCHCc7fGXXYIf9105rBUq8_MyI_4jkfFGzDFAISrKVEHtvK0nySHEFRLEpkmnA/exec',
-  // NOTE: anything here is visible in the page source. This gate
-  // keeps the tab tidy; it is not real security.
-  pin: '39373'
-};
+// Nothing here. This file is served to the browser, so the PIN and
+// the tracking URL live server-side in api/_secrets.js and are
+// never sent to the page. Last season both sat in the page source.
 
 // ── Refresh cadence ───────────────────────────────────────────
 export const REFRESH = {

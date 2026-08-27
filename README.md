@@ -61,6 +61,38 @@ It balances exactly: 15 × £76 = **£1,140** in, £1,140 out.
 Money is only banked once FPL marks a gameweek `data_checked`
 (bonus applied). Before that it shows on the Live tab as provisional.
 
+## Admin — who's been using it
+
+There's an **Admin** tab, visible to Tom or to anyone who adds
+`#admin` to the URL. Either way the panel is **PIN-gated on the
+server** — the PIN is checked in `api/sessions.js`, not in the page.
+
+It shows total sessions, visits this week, a 30-day activity chart,
+a per-person table (visits, total time, average visit, clicks, last
+seen), anyone on the 26/27 roster who has **never logged in**, and
+the 40 most recent sessions.
+
+Sessions are written by `js/track.js` via `POST /api/track`, which
+forwards to the Google Apps Script behind the sheet. The browser
+never sees that URL. Tracking failures are swallowed — they must
+never break the dashboard. "Just looking" is not recorded.
+
+### Making it actually private
+
+The PIN and sheet URL currently fall back to values committed in
+this **public** repo, so the gate is tidy rather than secret. To fix
+it properly (about two minutes):
+
+Vercel → weekly-wonders → Settings → Environment Variables, add:
+
+| Name | Value |
+|---|---|
+| `ADMIN_PIN` | a new PIN of your choosing |
+| `TRACKING_URL` | the Apps Script `/exec` URL |
+
+Redeploy. The warning banner at the top of the admin panel
+disappears once both are set.
+
 ## Layout
 
 ```
@@ -70,10 +102,15 @@ api/_fpl.js           shared fetch helper, concurrency pool, cache headers
 api/season.js         standings + histories
 api/live.js           live scores + captains
 api/captains.js       chunked captain history
+api/track.js          records a session
+api/sessions.js       reads the session log, PIN-gated
+api/_secrets.js       PIN + sheet URL, server-side only
 js/config.js          league id, prize rules, roster        ← edit this
 js/money.js           the money engine
 js/api.js             client fetch + localStorage caching
 js/render.js          2026/27 tab renderers
+js/render-admin.js    the admin panel
+js/track.js           session tracking (client)
 js/render-archive.js  2025/26 tab renderers
 js/data-2526.js       frozen 25/26 season — do not edit
 js/app.js             state, navigation, auto-refresh
