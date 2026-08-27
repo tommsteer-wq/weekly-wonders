@@ -24,14 +24,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="/css/app.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230B0E14'/><text y='72' x='50' text-anchor='middle' font-size='58' font-family='Georgia,serif' fill='%23C9A227'>W</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230B0E14'/><g fill='none' stroke='%23C9A227' stroke-linejoin='round' stroke-linecap='round'><circle cx='50' cy='50' r='43' stroke-width='3' opacity='.55'/><polyline points='28,34 33.5,53 39,43.5 44.5,53 50,34 55.5,53 61,43.5 66.5,53 72,34' stroke-width='7'/></g><text x='50' y='77' text-anchor='middle' dominant-baseline='middle' font-family='Georgia,serif' font-size='28' font-weight='700' fill='%23C9A227'>4</text></svg>">
 </head>
 <body>
+
+<!--
+  WW4 monogram. Defined once, used at every size.
+  The "WW" is a single continuous zigzag — a W is a zigzag, so two
+  of them joined at the peak make one unbroken line that reads as
+  the initials and as a form guide at the same time.
+-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ww4-mark" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="45.5" fill="none" stroke="currentColor" stroke-width="3" opacity=".55"/>
+    <polyline
+      points="28,32 33.5,52 39,42 44.5,52 50,32 55.5,52 61,42 66.5,52 72,32"
+      fill="none" stroke="currentColor" stroke-width="6.5"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    <text x="50" y="76" text-anchor="middle" dominant-baseline="middle"
+      font-family="Fraunces, Georgia, serif" font-size="27" font-weight="700"
+      letter-spacing="-1" fill="currentColor">4</text>
+  </symbol>
+</svg>
 
 <!-- ─────────────────────────── WELCOME ─────────────────────────── -->
 <div class="welcome hidden" id="welcome">
   <div class="welcome-inner">
-    <div class="welcome-mark">W</div>
+    <div class="welcome-mark"><svg viewBox="0 0 100 100"><use href="#ww4-mark"/></svg></div>
     <h1>Weekly Wonders</h1>
     <div class="sub">4TH EDITION · 2026/27</div>
     <div class="ask">Who are you?</div>
@@ -42,7 +61,7 @@
 <!-- ──────────────────────────── HEADER ─────────────────────────── -->
 <header class="header">
   <div class="brand">
-    <div class="brand-mark">W</div>
+    <div class="brand-mark"><svg viewBox="0 0 100 100"><use href="#ww4-mark"/></svg></div>
     <div class="brand-text">
       <h1>Weekly Wonders</h1>
       <p>4th Edition · 2026/27</p>

@@ -135,15 +135,14 @@ table, .num, .stat-value, .money { font-variant-numeric: tabular-nums; }
 }
 
 .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+/* WW4 monogram — the SVG draws its own ring, so no CSS circle here */
 .brand-mark {
-  width: 34px; height: 34px; flex-shrink: 0;
-  display: grid; place-items: center;
-  border: 1px solid var(--brass-dim);
-  border-radius: 50%;
+  width: 38px; height: 38px; flex-shrink: 0;
   color: var(--brass);
-  font-family: var(--serif); font-size: 15px; font-weight: 600;
-  background: var(--brass-glow);
+  transition: transform .25s ease;
 }
+.brand-mark svg { width: 100%; height: 100%; display: block; }
+.brand:hover .brand-mark { transform: rotate(-6deg) scale(1.04); }
 .brand-text h1 {
   font-family: var(--serif);
   font-size: 19px; font-weight: 600; letter-spacing: -.01em;
@@ -459,11 +458,15 @@ tr.is-me:hover { background: rgba(201,162,39,.16); }
 }
 .welcome-inner { position: relative; width: 100%; max-width: 660px; text-align: center; }
 .welcome-mark {
-  width: 60px; height: 60px; margin: 0 auto 22px;
-  display: grid; place-items: center;
-  border: 1px solid var(--brass-dim); border-radius: 50%;
-  background: var(--brass-glow);
-  font-family: var(--serif); font-size: 25px; color: var(--brass);
+  width: 82px; height: 82px; margin: 0 auto 24px;
+  color: var(--brass);
+  filter: drop-shadow(0 0 24px rgba(201,162,39,.22));
+  animation: markIn .55s cubic-bezier(.2,.7,.3,1) both;
+}
+.welcome-mark svg { width: 100%; height: 100%; display: block; }
+@keyframes markIn {
+  from { opacity: 0; transform: scale(.86) translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
 .welcome h1 {
   font-family: var(--serif);

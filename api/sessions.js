@@ -15,22 +15,30 @@ export const config = { maxDuration: 20 };
 // Nothing is ever deleted. The sheet keeps every session it has
 // ever been sent; this only decides which bucket one is shown in.
 //
-//   before THIRD_EDITION_END → 2025/26. Somebody looking at the
+//   before SEASON_START_2627 → 2025/26. Somebody looking at the
 //                              old dashboard, which is what it was.
-//   between the two          → the evening the 4th Edition was
-//                              built and its tracking tested. Not
-//                              real visits, so shown in neither.
-//   after SEASON_START_2627  → 2026/27, counting from a clean slate.
+//   after                    → 2026/27.
 //
-// To re-zero the counter at any point, move SEASON_START_2627
-// forward. The history underneath is untouched either way.
-const THIRD_EDITION_END = '2026-08-27T18:37:00.000Z';
-const SEASON_START_2627 = '2026-08-27T21:00:00.000Z';
+// NOTE: this boundary must never be set to a time in the future.
+// It was briefly set to 21:00 on launch night to exclude testing,
+// which silently swallowed real sessions from Baz and Phil for the
+// hour in between. A cutoff can only ever be in the past.
+const SEASON_START_2627 = '2026-08-27T18:37:00.000Z';
 
-const eraOf = loggedIn =>
-  loggedIn >= SEASON_START_2627 ? '2026-27'
-  : loggedIn < THIRD_EDITION_END ? '2025-26'
-  : 'build';
+// Rows written while building and testing the tracking on launch
+// night. Listed individually — a time window here would eat real
+// visits, which is exactly what went wrong the first time.
+const TEST_SESSION_IDS = new Set([
+  'TESTPING_1787856810223',
+  'STEER_1787856868047',
+  'CAT_1787856887586',
+  'STEER_1787857036581',
+  'STEER_1787857070836',
+  'STEER_1787857829827',
+  'BAZ_1787858360689'
+]);
+
+const eraOf = loggedIn => loggedIn >= SEASON_START_2627 ? '2026-27' : '2025-26';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -61,8 +69,8 @@ export default async function handler(req, res) {
         clicks: Math.max(0, parseInt(clicks, 10) || 0),
         era: eraOf(loggedIn)
       }))
-      // drop the build/test window and any connectivity pings
-      .filter(s => s.era !== 'build' && !/^TESTPING/i.test(s.nick))
+      // drop known test writes and any connectivity pings
+      .filter(s => !TEST_SESSION_IDS.has(s.id) && !/^TESTPING/i.test(s.nick))
       .sort((a, b) => new Date(b.loggedIn) - new Date(a.loggedIn));
 
     const counts = {
