@@ -4,13 +4,15 @@
 //  One cached response serves the whole league.
 // ══════════════════════════════════════════════════════════════
 
-import { fpl, pool, gameweekState, setCache, fail } from './_fpl.js';
+import { fpl, pool, gameweekState, setCache, fail, parseLeagueId } from './_fpl.js';
 
 export const config = { maxDuration: 30 };
 
 export default async function handler(req, res) {
-  const leagueId = String(req.query.league || '').replace(/\D/g, '');
-  if (!leagueId) return res.status(400).json({ ok: false, error: 'Missing ?league=<id>' });
+  const leagueId = parseLeagueId(req.query.league);
+  if (!leagueId) {
+    return res.status(400).json({ ok: false, error: 'Bad or missing ?league=<id>' });
+  }
 
   try {
     const [bootstrap, league] = await Promise.all([

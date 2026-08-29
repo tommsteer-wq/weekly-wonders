@@ -5,13 +5,19 @@
 //  so it updates as the goals go in — not at the end of the week.
 // ══════════════════════════════════════════════════════════════
 
-import { fpl, pool, gameweekState, setCache, fail } from './_fpl.js';
+import { fpl, pool, gameweekState, setCache, fail, parseLeagueId, parseGameweek } from './_fpl.js';
 
 export const config = { maxDuration: 30 };
 
 export default async function handler(req, res) {
-  const leagueId = String(req.query.league || '').replace(/\D/g, '');
-  if (!leagueId) return res.status(400).json({ ok: false, error: 'Missing ?league=<id>' });
+  const leagueId = parseLeagueId(req.query.league);
+  if (!leagueId) {
+    return res.status(400).json({ ok: false, error: 'Bad or missing ?league=<id>' });
+  }
+  const askedGW = parseGameweek(req.query.gw);
+  if (askedGW === null) {
+    return res.status(400).json({ ok: false, error: 'Bad ?gw= — must be 1 to 38' });
+  }
 
   try {
     const [bootstrap, league] = await Promise.all([
@@ -23,7 +29,7 @@ export default async function handler(req, res) {
     }
 
     const state = gameweekState(bootstrap.events);
-    const gw = Number(req.query.gw) || state.currentGW;
+    const gw = askedGW ?? state.currentGW;
     if (!gw) return res.status(200).json({ ok: true, gw: null, note: 'Season has not started', managers: [] });
 
     // Reference maps: element id -> player, team id -> short name

@@ -72,6 +72,26 @@ export function gameweekState(events) {
   };
 }
 
+/**
+ * Validate a league id.
+ * Stripping non-digits was a mistake: "-1" became league 1 (Arsenal)
+ * and "1x1" became league 11 (Hull City), so a typo quietly returned
+ * a stranger's league instead of an error. Reject, don't coerce.
+ */
+export function parseLeagueId(raw) {
+  const s = String(raw ?? '').trim();
+  return /^[1-9]\d{0,8}$/.test(s) ? Number(s) : null;
+}
+
+/** Validate a gameweek. A season has 38; anything else is a mistake. */
+export function parseGameweek(raw) {
+  if (raw === undefined || raw === '') return undefined;   // "not supplied"
+  const s = String(raw).trim();
+  if (!/^\d{1,2}$/.test(s)) return null;
+  const n = Number(s);
+  return n >= 1 && n <= 38 ? n : null;
+}
+
 /** Cache-Control for Vercel's edge. Live data is short-lived. */
 export function setCache(res, { seconds, swr = seconds * 4 }) {
   res.setHeader('Cache-Control', `public, s-maxage=${seconds}, stale-while-revalidate=${swr}`);

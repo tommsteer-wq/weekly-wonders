@@ -8,15 +8,17 @@
 //  this, GW38 would mean 570 upstream calls on every page load.
 // ══════════════════════════════════════════════════════════════
 
-import { fpl, pool, setCache, fail } from './_fpl.js';
+import { fpl, pool, setCache, fail, parseLeagueId } from './_fpl.js';
 
 export const config = { maxDuration: 60 };
 
 const MAX_GWS = 6;   // keep a single invocation inside the time budget
 
 export default async function handler(req, res) {
-  const leagueId = String(req.query.league || '').replace(/\D/g, '');
-  if (!leagueId) return res.status(400).json({ ok: false, error: 'Missing ?league=<id>' });
+  const leagueId = parseLeagueId(req.query.league);
+  if (!leagueId) {
+    return res.status(400).json({ ok: false, error: 'Bad or missing ?league=<id>' });
+  }
 
   const gws = String(req.query.gws || '')
     .split(',')
