@@ -87,9 +87,29 @@ function recomputeMoney() {
 }
 
 /* ──────────────────────────── LOAD ──────────────────────────── */
-async function load({ silent = false } = {}) {
+// Guards against a stampede. `fetchedAt` on a response is when the
+// EDGE cached it, which can already be two minutes old, so it is
+// useless for deciding whether this browser needs to ask again —
+// using it meant every tab focus triggered another refresh.
+let inFlight = null;
+let lastFetchAt = 0;
+
+/** true when this client has asked recently enough to skip. */
+function isFresh(ms = REFRESH.liveMs) {
+  return Date.now() - lastFetchAt < ms;
+}
+
+async function load(opts = {}) {
+  // collapse concurrent callers onto one request
+  if (inFlight) return inFlight;
+  inFlight = doLoad(opts).finally(() => { inFlight = null; });
+  return inFlight;
+}
+
+async function doLoad({ silent = false } = {}) {
   if (!silent) { S.loading = true; paint(); }
   S.error = null;
+  lastFetchAt = Date.now();
 
   try {
     const season = await fetchSeason();
@@ -338,12 +358,14 @@ function scheduleRefresh() {
   }, wait);
 }
 
-// Catch up immediately when the tab comes back into focus
+// Catch up when the tab comes back into focus — but only if THIS
+// client hasn't asked recently. Measuring the response's fetchedAt
+// instead made every focus change refetch, because an edge-cached
+// response is already older than the refresh interval on arrival.
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && S.season === '2026-27') {
-    const age = S.fetchedAt ? Date.now() - new Date(S.fetchedAt).getTime() : Infinity;
-    if (age > REFRESH.liveMs) load({ silent: true });
-  }
+  if (document.hidden || S.season !== '2026-27') return;
+  const wait = (S.live?.isLive || S.gameweek.isLive) ? REFRESH.liveMs : REFRESH.idleMs;
+  if (!isFresh(wait)) load({ silent: true });
 });
 
 /* ─────────────────────────── EVENTS ─────────────────────────── */
