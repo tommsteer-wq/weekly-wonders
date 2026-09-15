@@ -417,19 +417,33 @@ export function renderCaptains(s) {
 
   const maxAvg = Math.max(...seasonRows.map(r => r.avg), 1);
 
+  // Say plainly which gameweeks are in these numbers. Without it a
+  // manager who captained the same player twice reads as a repeat
+  // rather than two different weeks.
+  const gwsCounted = [...new Set(hist.map(r => r.gw))].sort((a, b) => a - b);
+  const liveInThere = live?.gw && gwsCounted.includes(live.gw) && !live.dataChecked;
+  const rangeLabel = gwsCounted.length
+    ? (gwsCounted.length === 1 ? `GW${gwsCounted[0]}` : `GW${gwsCounted[0]}–${gwsCounted[gwsCounted.length - 1]}`)
+    : 'no gameweeks yet';
+
   const seasonBody = seasonRows.length ? seasonRows.map((r, i) => {
     const m = s.byNick[r.nick];
     return `
       <tr class="${rowClass(i, seasonRows.length, r.nick === s.me)}">
         <td class="rank">${i + 1}</td>
         <td>${mgrCell(m?.display || r.nick, m?.team)}</td>
+        <td class="center dim">${r.n}</td>
         <td class="right"><span class="total">${r.avg.toFixed(1)}</span></td>
         <td style="width:100px"><div class="meter"><span style="width:${pct(r.avg, maxAvg)}%"></span></div></td>
         <td class="right dim">${r.total}</td>
         <td class="center">${r.hauls ? `<span class="pill pos">${r.hauls}</span>` : '<span class="dim">0</span>'}</td>
         <td class="center">${r.blanks ? `<span class="pill neg">${r.blanks}</span>` : '<span class="dim">0</span>'}</td>
-        <td class="dim nowrap" style="font-size:11.5px">${r.best ? `${esc(r.best.captain.web)} ${r.best.captain.scored}` : '—'}</td>
-        <td class="dim nowrap" style="font-size:11.5px">${r.worst ? `${esc(r.worst.captain.web)} ${r.worst.captain.scored}` : '—'}</td>
+        <td class="dim nowrap" style="font-size:11.5px">${r.best
+          ? `${esc(r.best.captain.web)} <span class="pos">${r.best.captain.scored}</span> <span style="color:var(--faint)">GW${r.best.gw}</span>`
+          : '—'}</td>
+        <td class="dim nowrap" style="font-size:11.5px">${r.worst
+          ? `${esc(r.worst.captain.web)} <span class="neg">${r.worst.captain.scored}</span> <span style="color:var(--faint)">GW${r.worst.gw}</span>`
+          : '—'}</td>
       </tr>`;
   }).join('') : `<tr><td colspan="9">${empty('Building captain history', 'Loading past gameweeks…', '·')}</td></tr>`;
 
@@ -478,13 +492,16 @@ export function renderCaptains(s) {
     <div class="card">
       <div class="card-head">
         <h2>Captain league</h2>
-        <span class="sub">Average return per gameweek, after the armband</span>
+        <span class="sub">Average return per gameweek, after the armband · ${esc(rangeLabel)}${
+          liveInThere ? ` <span class="pill live">GW${live.gw} still in play</span>` : ''}</span>
       </div>
       <div class="card-body flush">
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>#</th><th>Manager</th><th class="right">Avg</th><th></th><th class="right">Total</th>
+              <th>#</th><th>Manager</th>
+              <th class="center" title="Gameweeks counted">GWs</th>
+              <th class="right">Avg</th><th></th><th class="right">Total</th>
               <th class="center" title="Captain returned 10+ raw points">Hauls</th>
               <th class="center" title="Captain returned 2 or fewer">Blanks</th>
               <th>Best call</th><th>Worst call</th>

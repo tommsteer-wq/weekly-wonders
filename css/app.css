@@ -512,6 +512,21 @@ tr.is-me:hover { background: rgba(201,162,39,.16); }
   .viewer-chip { padding: 4px; }
   .viewer-chip .label { display: none; }
   thead th, tbody td { padding: 9px 8px; }
+
+  /* The header is a single flex row with five things in it. On a
+     phone there is not enough width, and flex was shrinking the
+     controls rather than the text: the wordmark clipped to
+     "Weekly" and the refresh button was squashed from 34px to 17.
+     Protect the controls, and let the WW4 monogram carry the
+     branding on its own at this width. */
+  .brand-text { display: none; }
+  .season-switch,
+  .live-pill,
+  .viewer-chip,
+  .icon-btn { flex-shrink: 0; }
+
+  /* and give the season switch a real tap target */
+  .season-switch button { padding: 8px 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
